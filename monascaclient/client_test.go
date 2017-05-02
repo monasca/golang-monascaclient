@@ -20,7 +20,7 @@ import (
 )
 
 func TestUrlCreation(t *testing.T) {
-	const baseURL = "http://fred.hpe.com:7072"
+	const baseURL = "http://fred.com:7072"
 	SetBaseURL(baseURL)
 	const path = "v2.0/metrics/statistics"
 	const metricName = "cpu.idle_perc"
