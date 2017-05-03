@@ -12,12 +12,14 @@
 //    License for the specific language governing permissions and limitations
 //    under the License.
 
-package monascaclient
+package models
 
-type StatisticElement struct {
-	ID         string            `json:"id"`
+type MetricsResponse struct {
+	Links    []Link   `json:"links"`
+	Elements []Metric `json:"elements"`
+}
+
+type Metric struct {
 	Name       string            `json:"name"`
 	Dimensions map[string]string `json:"dimensions"`
-	Columns    []string          `json:"columns"`
-	Statistics [][]interface{}   `json:"statistics"`
 }

@@ -18,7 +18,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	"github.com/monasca/golang-monascaclient/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -29,32 +29,89 @@ import (
 
 const timeFormat = "2006-01-02T15:04:05Z"
 
+const (
+	defaultURL      = "http://localhost:8070"
+	defaultTimeout  = 10
+	defaultInsecure = false
+)
+
 var (
-	baseURL        = "http://monasca.monasca:8070"
-	requestTimeout = 10
-	allowInsecure  = false
+	monClient = client{
+		baseURL:        defaultURL,
+		requestTimeout: defaultTimeout,
+		allowInsecure:  defaultInsecure,
+	}
 )
 
 func SetBaseURL(url string) {
-	log.Infof("Using Monasca API URL of '%v'", url)
-	baseURL = url
+	monClient.SetBaseURL(url)
 }
 
-// Value of true should only be used for testing!!!
 func SetInsecure(insecure bool) {
-	log.Infof("Setting allowInsecure '%v'", insecure)
-	allowInsecure = insecure
+	monClient.SetInsecure(insecure)
 }
 
 func SetTimeout(timeout int) {
-	log.Infof("Using Monasca API Timeout of '%v'", timeout)
-	requestTimeout = timeout
+	monClient.SetTimeout(timeout)
 }
 
-type Client struct {
+func GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]models.Metric, error) {
+	return monClient.GetMetrics(metricName, dimensions, headers)
 }
 
-func (p *Client) GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string, headers http.Header) (*StatisticsResponse, error) {
+func GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string, headers http.Header) (*models.StatisticsResponse, error) {
+	return monClient.GetStatistics(metricName, startTime, endTime, period, dimensions, headers)
+}
+
+type client struct {
+	baseURL        string
+	requestTimeout int
+	allowInsecure  bool
+}
+
+func New() {
+	return client{
+		baseURL:        defaultURL,
+		requestTimeout: defaultTimeout,
+		allowInsecure:  defaultInsecure,
+	}
+}
+
+func (c *client) SetBaseURL(url string) {
+	c.baseURL = url
+}
+
+// Value of true should only be used for testing!!!
+func (c *client) SetInsecure(insecure bool) {
+	c.allowInsecure = insecure
+}
+
+func (c *client) SetTimeout(timeout int) {
+	c.requestTimeout = timeout
+}
+
+func (p *client) GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]models.Metric, error) {
+	queryParameters := map[string]string{
+		"name": metricName,
+	}
+
+	monascaURL := p.createMonascaAPIURL("v2.0/metrics", queryParameters, dimensions)
+
+	body, monascaErr := p.callMonasca(monascaURL, headers)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	metricsResponse := models.MetricsResponse{}
+	err := json.Unmarshal(body, &metricsResponse)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	return metricsResponse.Elements, nil
+}
+
+func (p *client) GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string, headers http.Header) (*models.StatisticsResponse, error) {
 	// TODO: Review this entire function
 	// TODO: Handle errors. How does Go work?
 	queryParameters := map[string]string{
@@ -65,13 +122,13 @@ func (p *Client) GetStatistics(metricName string, startTime time.Time, endTime t
 		"period":     fmt.Sprintf("%d", period),
 	}
 
-	monascaURL := createMonascaAPIURL("v2.0/metrics/statistics", queryParameters, dimensions)
+	monascaURL := p.createMonascaAPIURL("v2.0/metrics/statistics", queryParameters, dimensions)
 
-	body, monascaErr := callMonasca(monascaURL, headers)
+	body, monascaErr := p.callMonasca(monascaURL, headers)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
-	statisticsResponse := StatisticsResponse{}
+	statisticsResponse := models.StatisticsResponse{}
 	err := json.Unmarshal(body, &statisticsResponse)
 
 	if err != nil {
@@ -81,9 +138,7 @@ func (p *Client) GetStatistics(metricName string, startTime time.Time, endTime t
 	return &statisticsResponse, nil
 }
 
-func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
-
-	log.Infof("Calling Monasca with '%v'", monascaURL)
+func (c *client) callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 
 	req, err := http.NewRequest("GET", monascaURL, nil)
 
@@ -94,16 +149,15 @@ func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 		for index := range values {
 			value := values[index]
 			if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
-				log.Infof("Fixing the value '%s' for header '%s'", value, header)
 				value = value[1 : len(value)-1]
 			}
 			req.Header.Add(header, value)
 		}
 	}
 
-	timeout := time.Duration(requestTimeout) * time.Second
+	timeout := time.Duration(c.requestTimeout) * time.Second
 	var client *http.Client
-	if !allowInsecure {
+	if !c.allowInsecure {
 		client = &http.Client{Timeout: timeout}
 	} else {
 		transCfg := &http.Transport{
@@ -115,7 +169,6 @@ func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 	resp, err := client.Do(req)
 
 	if err != nil || resp == nil {
-		log.Errorf("Monasca request failed '%v'", err)
 		return nil, err
 	}
 
@@ -126,16 +179,15 @@ func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 		panic(err.Error())
 	}
 	if resp.StatusCode != 200 {
-		log.Errorf("Monasca request failed %d; '%v'", resp.StatusCode, string([]byte(body)))
 		panic(fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body))))
 	}
 
 	return body, nil
 }
 
-func createMonascaAPIURL(path string, queryParameters map[string]string, dimensions map[string]string) string {
+func (c *client) createMonascaAPIURL(path string, queryParameters map[string]string, dimensions map[string]string) string {
 
-	monascaURL, parseErr := url.Parse(baseURL)
+	monascaURL, parseErr := url.Parse(c.baseURL)
 	if parseErr != nil {
 		panic(parseErr.Error())
 	}
@@ -157,35 +209,4 @@ func createMonascaAPIURL(path string, queryParameters map[string]string, dimensi
 	monascaURL.RawQuery = q.Encode()
 
 	return monascaURL.String()
-}
-
-type MetricsResponse struct {
-	Links    []Link   `json:"links"`
-	Elements []Metric `json:"elements"`
-}
-
-type Metric struct {
-	Name       string            `json:"name"`
-	Dimensions map[string]string `json:"dimensions"`
-}
-
-func (p *Client) GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]Metric, error) {
-	queryParameters := map[string]string{
-		"name": metricName,
-	}
-
-	monascaURL := createMonascaAPIURL("v2.0/metrics", queryParameters, dimensions)
-
-	body, monascaErr := callMonasca(monascaURL, headers)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	metricsResponse := MetricsResponse{}
-	err := json.Unmarshal(body, &metricsResponse)
-
-	if err != nil {
-		panic(err.Error())
-	}
-	return metricsResponse.Elements, nil
 }
