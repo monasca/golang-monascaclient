@@ -55,6 +55,10 @@ func SetTimeout(timeout int) {
 	monClient.SetTimeout(timeout)
 }
 
+func SetHeaders(headers http.Header) {
+	monClient.SetHeaders(headers)
+}
+
 func GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]models.Metric, error) {
 	return monClient.GetMetrics(metricName, dimensions, headers)
 }
@@ -67,6 +71,7 @@ type client struct {
 	baseURL        string
 	requestTimeout int
 	allowInsecure  bool
+	headers        http.Header
 }
 
 func New() *client {
@@ -88,6 +93,10 @@ func (c *client) SetInsecure(insecure bool) {
 
 func (c *client) SetTimeout(timeout int) {
 	c.requestTimeout = timeout
+}
+
+func (c *client) SetHeaders(headers http.Header) {
+	c.headers = headers
 }
 
 func (p *client) GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]models.Metric, error) {
