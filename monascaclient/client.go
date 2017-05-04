@@ -69,8 +69,8 @@ type client struct {
 	allowInsecure  bool
 }
 
-func New() {
-	return client{
+func New() *client {
+	return &client{
 		baseURL:        defaultURL,
 		requestTimeout: defaultTimeout,
 		allowInsecure:  defaultInsecure,
