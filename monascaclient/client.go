@@ -18,7 +18,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -36,18 +35,15 @@ var (
 )
 
 func SetBaseURL(url string) {
-	log.Infof("Using Monasca API URL of '%v'", url)
 	baseURL = url
 }
 
 // Value of true should only be used for testing!!!
 func SetInsecure(insecure bool) {
-	log.Infof("Setting allowInsecure '%v'", insecure)
 	allowInsecure = insecure
 }
 
 func SetTimeout(timeout int) {
-	log.Infof("Using Monasca API Timeout of '%v'", timeout)
 	requestTimeout = timeout
 }
 
@@ -83,8 +79,6 @@ func (p *Client) GetStatistics(metricName string, startTime time.Time, endTime t
 
 func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 
-	log.Infof("Calling Monasca with '%v'", monascaURL)
-
 	req, err := http.NewRequest("GET", monascaURL, nil)
 
 	req.Header.Add("Content-Type", "application/json")
@@ -94,7 +88,6 @@ func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 		for index := range values {
 			value := values[index]
 			if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
-				log.Infof("Fixing the value '%s' for header '%s'", value, header)
 				value = value[1 : len(value)-1]
 			}
 			req.Header.Add(header, value)
@@ -115,7 +108,6 @@ func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 	resp, err := client.Do(req)
 
 	if err != nil || resp == nil {
-		log.Errorf("Monasca request failed '%v'", err)
 		return nil, err
 	}
 
@@ -126,7 +118,6 @@ func callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
 		panic(err.Error())
 	}
 	if resp.StatusCode != 200 {
-		log.Errorf("Monasca request failed %d; '%v'", resp.StatusCode, string([]byte(body)))
 		panic(fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body))))
 	}
 
