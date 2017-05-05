@@ -59,12 +59,12 @@ func SetHeaders(headers http.Header) {
 	monClient.SetHeaders(headers)
 }
 
-func GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]models.Metric, error) {
-	return monClient.GetMetrics(metricName, dimensions, headers)
+func GetMetrics(metricName string, dimensions map[string]string) ([]models.Metric, error) {
+	return monClient.GetMetrics(metricName, dimensions)
 }
 
-func GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string, headers http.Header) (*models.StatisticsResponse, error) {
-	return monClient.GetStatistics(metricName, startTime, endTime, period, dimensions, headers)
+func GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
+	return monClient.GetStatistics(metricName, startTime, endTime, period, dimensions)
 }
 
 type client struct {
@@ -99,28 +99,28 @@ func (c *client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-func (p *client) GetMetrics(metricName string, dimensions map[string]string, headers http.Header) ([]models.Metric, error) {
+func (p *client) GetMetrics(metricName string, dimensions map[string]string) ([]models.Metric, error) {
 	queryParameters := map[string]string{
 		"name": metricName,
 	}
 
 	monascaURL := p.createMonascaAPIURL("v2.0/metrics", queryParameters, dimensions)
 
-	body, monascaErr := p.callMonasca(monascaURL, headers)
+	body, monascaErr := p.callMonasca(monascaURL)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
 
 	metricsResponse := models.MetricsResponse{}
 	err := json.Unmarshal(body, &metricsResponse)
-
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
+
 	return metricsResponse.Elements, nil
 }
 
-func (p *client) GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string, headers http.Header) (*models.StatisticsResponse, error) {
+func (p *client) GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
 	// TODO: Review this entire function
 	// TODO: Handle errors. How does Go work?
 	queryParameters := map[string]string{
@@ -133,28 +133,27 @@ func (p *client) GetStatistics(metricName string, startTime time.Time, endTime t
 
 	monascaURL := p.createMonascaAPIURL("v2.0/metrics/statistics", queryParameters, dimensions)
 
-	body, monascaErr := p.callMonasca(monascaURL, headers)
+	body, monascaErr := p.callMonasca(monascaURL)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
 	statisticsResponse := models.StatisticsResponse{}
 	err := json.Unmarshal(body, &statisticsResponse)
-
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	return &statisticsResponse, nil
 }
 
-func (c *client) callMonasca(monascaURL string, headers http.Header) ([]byte, error) {
+func (c *client) callMonasca(monascaURL string) ([]byte, error) {
 
 	req, err := http.NewRequest("GET", monascaURL, nil)
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
-	for header, values := range headers {
+	for header, values := range c.headers {
 		for index := range values {
 			value := values[index]
 			if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
@@ -176,7 +175,6 @@ func (c *client) callMonasca(monascaURL string, headers http.Header) ([]byte, er
 		client = &http.Client{Timeout: timeout, Transport: transCfg}
 	}
 	resp, err := client.Do(req)
-
 	if err != nil || resp == nil {
 		return nil, err
 	}
@@ -185,10 +183,10 @@ func (c *client) callMonasca(monascaURL string, headers http.Header) ([]byte, er
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	if resp.StatusCode != 200 {
-		panic(fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body))))
+		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
 	}
 
 	return body, nil
@@ -198,7 +196,7 @@ func (c *client) createMonascaAPIURL(path string, queryParameters map[string]str
 
 	monascaURL, parseErr := url.Parse(c.baseURL)
 	if parseErr != nil {
-		panic(parseErr.Error())
+		return nil, parseErr
 	}
 	monascaURL.Path = path
 
