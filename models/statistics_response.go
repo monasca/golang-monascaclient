@@ -12,9 +12,9 @@
 //    License for the specific language governing permissions and limitations
 //    under the License.
 
-package monascaclient
+package models
 
-type Link struct {
-	Rel  string `json:"rel"`
-	Href string `json:"href"`
+type StatisticsResponse struct {
+	Links    []Link             `json:"links"`
+	Elements []StatisticElement `json:"elements"`
 }
