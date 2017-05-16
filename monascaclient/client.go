@@ -18,7 +18,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/monasca/golang-monascaclient/models"
+	"github.com/monasca/golang-monascaclient/monascaclient/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -133,6 +133,38 @@ func (p *Client) GetMetrics(metricName string, dimensions map[string]string) ([]
 	}
 
 	return metricsResponse.Elements, nil
+}
+
+func (p *Client) GetDimensionValues(metricName, dimensionName string) ([]string, error) {
+	queryParameters := map[string]string{
+		"dimension_name": dimensionName,
+	}
+	if metricName != "" {
+		queryParameters["metric_name"] = metricName
+	}
+
+	monascaURL, err := p.createMonascaAPIURL("/v2.0/metrics/dimensions/names/values", queryParameters, map[string]string{})
+	if err != nil {
+		return nil, err
+	}
+
+	body, monascaErr := p.callMonasca(monascaURL)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	var response models.DimensionValueResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	results := []string{}
+	for _, value := range response.Elements {
+		results = append(results, value.Value)
+	}
+
+	return results, nil
 }
 
 func (p *Client) GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
