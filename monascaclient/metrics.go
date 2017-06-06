@@ -15,41 +15,41 @@
 package monascaclient
 
 import (
-	"fmt"
 	"encoding/json"
-	"time"
-	"strconv"
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
 )
 
 const timeFormat = "2006-01-02T15:04:05Z"
 
-func GetMetrics(metricName *string, dimensions map[string]string) ([]models.Metric, error) {
-	return monClient.GetMetrics(metricName, dimensions)
+func GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
+	return monClient.GetMetrics(metricQuery)
 }
 
-func GetStatistics(metricName *string, statisticFunction *string, startTime *time.Time, endTime *time.Time,
-	period *int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
-	return monClient.GetStatistics(metricName, statisticFunction, startTime, endTime, period, dimensions)
+func GetDimensionValues(dimensionQuery *models.DimensionValueQuery) ([]string, error) {
+	return monClient.GetDimensionValues(dimensionQuery)
 }
 
-func GetMeasurements(metricName *string, startTime *time.Time, endTime *time.Time, mergeMetrics *bool, groupBy *string,
-	dimensions map[string]string) (*models.MeasurementsResponse, error) {
-	return monClient.GetMeasurements(metricName, startTime, endTime, mergeMetrics, groupBy, dimensions)
+func GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([]string, error) {
+	return monClient.GetDimensionNames(dimensionQuery)
 }
 
-func (p *Client) GetMetrics(metricName *string, dimensions map[string]string) ([]models.Metric, error) {
-	queryParameters := map[string]string{}
-	if metricName != nil {
-		queryParameters["name"] = *metricName
-	}
+func GetStatistics(statisticsQuery *models.StatisticQuery) (*models.StatisticsResponse, error) {
+	return monClient.GetStatistics(statisticsQuery)
+}
 
-	monascaURL, URLerr := p.createMonascaAPIURL("v2.0/metrics", queryParameters, dimensions)
+func GetMeasurements(measurementQuery *models.MeasurementQuery) (*models.MeasurementsResponse, error) {
+	return monClient.GetMeasurements(measurementQuery)
+}
+
+func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
+	urlValues := convertStructToQueryParameters(metricQuery)
+
+	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics", urlValues)
 	if URLerr != nil {
 		return nil, URLerr
 	}
 
-	body, monascaErr := p.callMonasca(monascaURL)
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -63,21 +63,15 @@ func (p *Client) GetMetrics(metricName *string, dimensions map[string]string) ([
 	return metricsResponse.Elements, nil
 }
 
-func (p *Client) GetDimensionValues(metricName, dimensionName *string) ([]string, error) {
-	queryParameters := map[string]string{}
-	if metricName != nil {
-		queryParameters["metric_name"] = *metricName
-	}
-	if dimensionName != nil {
-		queryParameters["dimension_name"] = *dimensionName
-	}
+func (c *Client) GetDimensionValues(dimensionQuery *models.DimensionValueQuery) ([]string, error) {
+	urlValues := convertStructToQueryParameters(dimensionQuery)
 
-	monascaURL, err := p.createMonascaAPIURL("/v2.0/metrics/dimensions/names/values", queryParameters, nil)
+	monascaURL, err := c.createMonascaAPIURL("/v2.0/metrics/dimensions/names/values", urlValues)
 	if err != nil {
 		return nil, err
 	}
 
-	body, monascaErr := p.callMonasca(monascaURL)
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -96,32 +90,43 @@ func (p *Client) GetDimensionValues(metricName, dimensionName *string) ([]string
 	return results, nil
 }
 
-func (p *Client) GetStatistics(metricName *string, statisticFunction *string, startTime *time.Time, endTime *time.Time,
-	period *int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
-	// TODO: Review this entire function
-	// TODO: Handle errors. How does Go work?
-	queryParameters := map[string]string{}
-	if metricName != nil {
-		queryParameters["name"] = *metricName
+func (c *Client) GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([]string, error) {
+	urlValues := convertStructToQueryParameters(dimensionQuery)
+
+	monascaURL, err := c.createMonascaAPIURL("/v2.0/metrics/dimensions/names", urlValues)
+	if err != nil {
+		return nil, err
 	}
-	if statisticFunction != nil {
-		queryParameters["statistics"] = *statisticFunction
+
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	if monascaErr != nil {
+		return nil, monascaErr
 	}
-	if startTime != nil {
-		queryParameters["start_time"] = (*startTime).UTC().Format(timeFormat)
+
+	var response models.DimensionValueResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		panic(err.Error())
 	}
-	if endTime != nil {
-		queryParameters["end_time"] = (*endTime).UTC().Format(timeFormat)
+
+	results := []string{}
+	for _, value := range response.Elements {
+		results = append(results, value.Value)
 	}
-	if period != nil {
-		queryParameters["period"] = fmt.Sprintf("%d", *period)
-	}
-	monascaURL, URLerr := p.createMonascaAPIURL("v2.0/metrics/statistics", queryParameters, dimensions)
+
+	return results, nil
+}
+
+
+func (c *Client) GetStatistics(statisticsQuery *models.StatisticQuery) (*models.StatisticsResponse, error) {
+	urlValues := convertStructToQueryParameters(statisticsQuery)
+
+	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics/statistics", urlValues)
 	if URLerr != nil {
 		return nil, URLerr
 	}
 
-	body, monascaErr := p.callMonasca(monascaURL)
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -134,31 +139,15 @@ func (p *Client) GetStatistics(metricName *string, statisticFunction *string, st
 	return &statisticsResponse, nil
 }
 
-func (p *Client) GetMeasurements(metricName *string, startTime *time.Time, endTime *time.Time, mergeMetrics *bool,
-	groupBy *string, dimensions map[string]string) (*models.MeasurementsResponse, error) {
-	queryParameters := map[string]string{}
-	if metricName != nil {
-		queryParameters["name"] = *metricName
-	}
-	if startTime != nil {
-		queryParameters["start_time"] = (*startTime).UTC().Format(timeFormat)
-	}
-	if endTime != nil {
-		queryParameters["end_time"] = (*endTime).UTC().Format(timeFormat)
-	}
-	if mergeMetrics != nil {
-		queryParameters["merge_metrics"] = strconv.FormatBool(*mergeMetrics)
-	}
-	if groupBy != nil {
-		queryParameters["group_by"] = *groupBy
-	}
+func (c *Client) GetMeasurements(measurementQuery *models.MeasurementQuery) (*models.MeasurementsResponse, error) {
+	urlValues := convertStructToQueryParameters(measurementQuery)
 
-	monascaURL, URLerr := p.createMonascaAPIURL("v2.0/metrics/measurements", queryParameters, dimensions)
+	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics/measurements", urlValues)
 	if URLerr != nil {
 		return nil, URLerr
 	}
 
-	body, monascaErr := p.callMonasca(monascaURL)
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}

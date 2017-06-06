@@ -17,54 +17,27 @@ package monascaclient
 import (
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
 	"encoding/json"
-	"time"
 )
 
-func GetAlarms(alarmDefinitionID *string, metricName *string, state *string, severity *string, lifecycleState *string,
-	link *string, stateUpdatedStartTime *time.Time, sortBy *string,
-	metricDimensions map[string]string) (*models.AlarmsResponse, error) {
-	return monClient.GetAlarms(alarmDefinitionID, metricName, state, severity, lifecycleState, link,
-		stateUpdatedStartTime, sortBy, metricDimensions)
+func GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
+	return monClient.GetAlarms(alarmQuery)
 }
-func (p *Client) GetAlarms(alarmDefinitionID *string, metricName *string, state *string, severity *string,
-	lifecycleState *string, link *string, stateUpdatedStartTime *time.Time, sortBy *string,
-	metricDimensions map[string]string) (*models.AlarmsResponse, error) {
-	queryParameters := map[string]string{}
-	if alarmDefinitionID != nil {
-		queryParameters["alarm_definition_id"] = *alarmDefinitionID
-	}
-	if metricName != nil {
-		queryParameters["metric_name"] = *metricName
-	}
-	if state != nil {
-		queryParameters["state"] = *state
-	}
-	if severity != nil {
-		queryParameters["severity"] = *severity
-	}
-	if lifecycleState != nil {
-		queryParameters["lifecycle_state"] = *lifecycleState
-	}
-	if state != nil {
-		queryParameters["state_updated_start_time"] = *state
-	}
-	if sortBy != nil {
-		queryParameters["sort_by"] = *sortBy
-	}
-	if link != nil {
-		queryParameters["link"] = *link
-	}
-	if stateUpdatedStartTime != nil {
-		queryParameters["state_updated_start_time"] = (*stateUpdatedStartTime).UTC().Format(timeFormat)
-	}
 
-	monascaURL, URLerr := p.createMonascaAPIURL("v2.0/alarms", queryParameters, metricDimensions)
+func GetAlarm(alarmID string) (*models.Alarm, error) {
+	return monClient.GetAlarm(alarmID)
+}
+
+func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
+	urlValues := convertStructToQueryParameters(alarmQuery)
+
+
+	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/alarms", urlValues)
 
 	if URLerr != nil {
 		return nil, URLerr
 	}
 
-	body, monascaErr := p.callMonasca(monascaURL)
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -77,3 +50,27 @@ func (p *Client) GetAlarms(alarmDefinitionID *string, metricName *string, state 
 
 	return &alarmsResponse, nil
 }
+
+func (c *Client) GetAlarm(alarmID string) (*models.Alarm, error) {
+	path := "v2.0/alarms/" + alarmID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+
+	if URLerr != nil {
+		return nil, URLerr
+	}
+
+	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	alarm := models.Alarm{}
+	err := json.Unmarshal(body, &alarm)
+	if err != nil {
+		return nil, err
+	}
+
+	return &alarm, nil
+}
+

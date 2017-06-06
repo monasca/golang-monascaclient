@@ -14,15 +14,23 @@
 
 package models
 
-type MeasurementsResponse struct {
-	Links    []Link   `json:"links"`
-	Elements []MeasurementElement `json:"elements"`
+type DimensionValueResponse struct {
+	Links			[]Link          	`json:"links"`
+	Elements 		[]DimensionValue	`json:"elements"`
 }
 
-type MeasurementElement struct {
-	ID         string            `json:"id"`
-	Name       string            `json:"name"`
-	Dimensions map[string]string `json:"dimensions"`
-	Columns    []string          `json:"columns"`
-	Measurements [][]interface{}   `json:"measurements"`
+type DimensionValue struct {
+	Value 			string 			`json:"dimension_value"`
+}
+
+type DimensionNameQuery struct {
+	DimensionName 		*string 		`queryParameter:"dimension_name"`
+	DimensionValueQuery
+}
+
+type DimensionValueQuery struct {
+	TenantID   		*string  		`queryParameter:"tenant_id"`
+	Name       		*string  		`queryParameter:"metric_name"`
+	Offset     		*int       		`queryParameter:"offset"`
+	Limit      		*int       		`queryParameter:"limit"`
 }

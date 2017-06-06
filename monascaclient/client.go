@@ -20,14 +20,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"sort"
 	"strings"
 	"time"
+	"bytes"
 )
 
 var (
 	defaultURL      = "http://localhost:8070"
-	defaultTimeout  = 10
+	defaultTimeout  = 60
 	defaultInsecure = false
 )
 
@@ -100,9 +100,16 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-func (c *Client) callMonasca(monascaURL string) ([]byte, error) {
+func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) ([]byte, error) {
+	var req *http.Request
+	var err error
 
-	req, err := http.NewRequest("GET", monascaURL, nil)
+	if requestBody == nil {
+		req, err = http.NewRequest(method, monascaURL, nil)
+	} else {
+		req, err = http.NewRequest(method, monascaURL, bytes.NewBuffer(*requestBody))
+	}
+
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -139,14 +146,14 @@ func (c *Client) callMonasca(monascaURL string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 200 && resp.StatusCode != 204 && resp.StatusCode != 201  {
 		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
 	}
 
 	return body, nil
 }
 
-func (c *Client) createMonascaAPIURL(path string, queryParameters map[string]string, dimensions map[string]string) (string, error) {
+func (c *Client) createMonascaAPIURL(path string, urlValues url.Values) (string, error) {
 
 	monascaURL, parseErr := url.Parse(c.baseURL)
 	if parseErr != nil {
@@ -154,20 +161,9 @@ func (c *Client) createMonascaAPIURL(path string, queryParameters map[string]str
 	}
 	monascaURL.Path = path
 
-	q := url.Values{}
-	for key := range queryParameters {
-		q.Add(key, queryParameters[key])
+	if urlValues != nil {
+		monascaURL.RawQuery = urlValues.Encode()
 	}
-	if len(dimensions) > 0 {
-		dimensionsSlice := make([]string, 0, len(dimensions))
-		for key := range dimensions {
-			dimensionsSlice = append(dimensionsSlice, key+":"+dimensions[key])
-		}
-		// Make sure dimensions are always in correct order to ensure tests pass
-		sort.Strings(dimensionsSlice)
-		q.Add("dimensions", strings.Join(dimensionsSlice, ","))
-	}
-	monascaURL.RawQuery = q.Encode()
 
 	return monascaURL.String(), nil
 }

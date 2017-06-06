@@ -14,11 +14,25 @@
 
 package models
 
-type DimensionValueResponse struct {
-	Links    []Link           `json:"links"`
-	Elements []DimensionValue `json:"elements"`
+type NotificationResponse struct {
+	Links		[]Link   		`json:"links"`
+	Elements 	[]NotificationElement	`json:"elements"`
 }
 
-type DimensionValue struct {
-	Value string `json:"dimension_value"`
+type NotificationElement struct {
+	ResponseElement
+	Notification
+}
+
+type Notification struct {
+	Name    	string			`json:"name"`
+	Period  	int 			`json:"period"`
+	Type    	string			`json:"type"`
+	Address		string			`json:"address"`
+}
+
+type NotificationQuery struct {
+	Offset    	*string			`queryParameter:"offset"`
+	Limit     	*int 			`queryParameter:"limit"`
+	SortBy    	*string			`queryParameter:"sort_by"`
 }

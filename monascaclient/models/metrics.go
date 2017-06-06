@@ -14,12 +14,24 @@
 
 package models
 
+import "time"
+
 type MetricsResponse struct {
-	Links    []Link   `json:"links"`
-	Elements []Metric `json:"elements"`
+	Links		Link			`json:"links"`
+	Elements	[]Metric 		`json:"elements"`
 }
 
 type Metric struct {
-	Name       string            `json:"name"`
-	Dimensions map[string]string `json:"dimensions"`
+	Name       	string            	`json:"name"`
+	Dimensions 	map[string]string 	`json:"dimensions"`
+}
+
+type MetricQuery struct {
+	TenantID   	*string  	      	`queryParameter:"tenant_id"`
+	Name       	*string  	      	`queryParameter:"name"`
+	Dimensions 	*map[string]string 	`queryParameter:"dimensions"`
+	StartTime  	*time.Time 	      	`queryParameter:"start_time"`
+	EndTime    	*time.Time         	`queryParameter:"end_time"`
+	Offset     	*int               	`queryParameter:"offset"`
+	Limit      	*int               	`queryParameter:"limit"`
 }
