@@ -45,3 +45,15 @@ type AlarmDefinitionQuery struct {
 	Offset     		*int       	      	`queryParameter:"offset"`
 	Limit      		*int      	      	`queryParameter:"limit"`
 }
+
+type AlarmDefinitionRequestBody struct {
+	Description         	*string   		`json:"description,omitempty"`
+	Severity            	*string   		`json:"severity,omitempty"`
+	AlarmActions        	*[]string 		`json:"alarm_actions,omitempty"`
+	OkActions           	*[]string 		`json:"ok_actions,omitempty"`
+	MatchBy             	*[]string 		`json:"match_by,omitempty"`
+	UndeterminedActions 	*[]string 		`json:"undetermined_actions,omitempty"`
+	Expression          	*string   		`json:"expression,omitempty"`
+	Name                	*string   		`json:"name,omitempty"`
+	ActionsEnabled		*bool			`json:"actions_enabled,omitempty"`
+}

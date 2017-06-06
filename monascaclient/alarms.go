@@ -27,6 +27,14 @@ func GetAlarm(alarmID string) (*models.Alarm, error) {
 	return monClient.GetAlarm(alarmID)
 }
 
+func UpdateAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
+	return monClient.UpdateAlarm(alarmID, alarmRequestBody)
+}
+
+func PatchAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
+	return monClient.PatchAlarm(alarmID, alarmRequestBody)
+}
+
 func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
 	urlValues := convertStructToQueryParameters(alarmQuery)
 
@@ -74,3 +82,58 @@ func (c *Client) GetAlarm(alarmID string) (*models.Alarm, error) {
 	return &alarm, nil
 }
 
+func (c *Client) UpdateAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
+	path := "v2.0/alarms/" + alarmID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+
+	if URLerr != nil {
+		return nil, URLerr
+	}
+
+	byteInput, marshalErr  := json.Marshal(*alarmRequestBody)
+	if marshalErr != nil{
+		return nil, marshalErr
+	}
+
+	body, monascaErr := c.callMonasca(monascaURL, "PUT", &byteInput)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	alarm := models.Alarm{}
+	err := json.Unmarshal(body, &alarm)
+	if err != nil {
+		return nil, err
+	}
+
+	return &alarm, nil
+}
+
+func (c *Client) PatchAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
+	path := "v2.0/alarms/" + alarmID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+
+	if URLerr != nil {
+		return nil, URLerr
+	}
+
+	byteInput, marshalErr  := json.Marshal(*alarmRequestBody)
+	if marshalErr != nil{
+		return nil, marshalErr
+	}
+
+	body, monascaErr := c.callMonasca(monascaURL, "PATCH", &byteInput)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	alarm := models.Alarm{}
+	err := json.Unmarshal(body, &alarm)
+	if err != nil {
+		return nil, err
+	}
+
+	return &alarm, nil
+}

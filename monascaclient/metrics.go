@@ -117,7 +117,6 @@ func (c *Client) GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([
 	return results, nil
 }
 
-
 func (c *Client) GetStatistics(statisticsQuery *models.StatisticQuery) (*models.StatisticsResponse, error) {
 	urlValues := convertStructToQueryParameters(statisticsQuery)
 

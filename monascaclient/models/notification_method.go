@@ -36,3 +36,10 @@ type NotificationQuery struct {
 	Limit     	*int 			`queryParameter:"limit"`
 	SortBy    	*string			`queryParameter:"sort_by"`
 }
+
+type NotificationRequestBody struct {
+	Name    	*string			`json:"name,omitempty"`
+	Period  	*int 			`json:"period,omitempty"`
+	Type    	*string			`json:"type,omitempty"`
+	Address		*string			`json:"address,omitempty"`
+}

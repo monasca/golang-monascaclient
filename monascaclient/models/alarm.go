@@ -45,3 +45,9 @@ type AlarmQuery struct {
 	Offset                	*int       	 	`queryParameter:"offset"`
 	Limit                 	*int       	 	`queryParameter:"limit"`
 }
+
+type AlarmRequestBody struct {
+	State   	      	*string 	      	`json:"state,omitempty"`
+	LifecycleState        	*string 	      	`json:"lifecycle_state,omitempty"`
+	Link                  	*string 	      	`json:"link,omitempty"`
+}

@@ -28,11 +28,16 @@ func GetAlarmDefinition(alarmDefinitionID string) (*models.AlarmDefinitionElemen
 	return monClient.GetAlarmDefinition(alarmDefinitionID)
 }
 
-func CreateAlarmDefinition(name *string, description *string, expression *string, matchBy *[]string, severity *string,
-	alarmActions *[]string,  okActions *[]string,
-	undeterminedActions *[]string)(*models.AlarmDefinitionElement, error) {
-	return monClient.CreateAlarmDefinition(name, description, expression, matchBy, severity, alarmActions,
-		okActions, undeterminedActions)
+func CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+	return monClient.CreateAlarmDefinition(alarmDefinitionRequestBody)
+}
+
+func UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+	return monClient.UpdateAlarmDefinition(alarmDefinitionID, alarmDefinitionRequestBody)
+}
+
+func PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+	return monClient.PatchAlarmDefinition(alarmDefinitionID, alarmDefinitionRequestBody)
 }
 
 func (c *Client) GetAlarmDefinitions(alarmDefinitionQuery *models.AlarmDefinitionQuery) (*models.AlarmDefinitionsResponse, error) {
@@ -79,35 +84,7 @@ func (c *Client) GetAlarmDefinition(alarmDefinitionID string) (*models.AlarmDefi
 	return &alarmDefinitionElement, nil
 }
 
-func (c *Client) CreateAlarmDefinition(name *string, description *string, expression *string, matchBy *[]string,
-	severity *string, alarmActions *[]string,  okActions *[]string,
-	undeterminedActions *[]string)(*models.AlarmDefinitionElement, error) {
-	alarmDefinition := models.AlarmDefinition{}
-	if name != nil {
-		alarmDefinition.Name = *name
-	}
-	if description != nil {
-		alarmDefinition.Description = *description
-	}
-	if severity != nil {
-		alarmDefinition.Severity = *severity
-	}
-	if expression != nil {
-		alarmDefinition.Expression = *expression
-	}
-	if matchBy != nil {
-		alarmDefinition.MatchBy = *matchBy
-	}
-	if alarmActions != nil {
-		alarmDefinition.AlarmActions = *alarmActions
-	}
-	if okActions != nil {
-		alarmDefinition.OkActions = *okActions
-	}
-	if undeterminedActions != nil {
-		alarmDefinition.UndeterminedActions = *undeterminedActions
-	}
-
+func (c *Client) CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
 	path := "v2.0/alarm-definitions"
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -115,11 +92,63 @@ func (c *Client) CreateAlarmDefinition(name *string, description *string, expres
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(alarmDefinition)
+	byteInput, marshalErr  := json.Marshal(*alarmDefinitionRequestBody)
 	if marshalErr != nil{
 		return nil, marshalErr
 	}
 	body, monascaErr := c.callMonasca(monascaURL,"POST", &byteInput)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	alarmDefinitionsElement := models.AlarmDefinitionElement{}
+	err := json.Unmarshal(body, &alarmDefinitionsElement)
+	if err != nil {
+		return nil, err
+	}
+
+	return &alarmDefinitionsElement, nil
+}
+
+func (c *Client) UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+	path := "v2.0/alarm-definitions/" + alarmDefinitionID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+	if URLerr != nil {
+		return nil, URLerr
+	}
+
+	byteInput, marshalErr  := json.Marshal(*alarmDefinitionRequestBody)
+	if marshalErr != nil{
+		return nil, marshalErr
+	}
+	body, monascaErr := c.callMonasca(monascaURL,"PUT", &byteInput)
+	if monascaErr != nil {
+		return nil, monascaErr
+	}
+
+	alarmDefinitionsElement := models.AlarmDefinitionElement{}
+	err := json.Unmarshal(body, &alarmDefinitionsElement)
+	if err != nil {
+		return nil, err
+	}
+
+	return &alarmDefinitionsElement, nil
+}
+
+func (c *Client) PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+	path := "v2.0/alarm-definitions/" + alarmDefinitionID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+	if URLerr != nil {
+		return nil, URLerr
+	}
+
+	byteInput, marshalErr  := json.Marshal(*alarmDefinitionRequestBody)
+	if marshalErr != nil{
+		return nil, marshalErr
+	}
+	body, monascaErr := c.callMonasca(monascaURL,"PATCH", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
