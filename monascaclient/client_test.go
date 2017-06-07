@@ -17,6 +17,7 @@ package monascaclient
 import (
 	"fmt"
 	"testing"
+	"net/url"
 )
 
 func TestUrlCreation(t *testing.T) {
@@ -27,20 +28,20 @@ func TestUrlCreation(t *testing.T) {
 	const period = 3600
 	const startTime = "2017-02-27T06:00:00Z"
 	const endTime = "2017-02-27T08:00:00Z"
+	urlValues := url.Values{}
+	urlValues.Add("name", metricName)
+	urlValues.Add("statistics", "avg")
+	urlValues.Add("start_time", startTime)
+	urlValues.Add("end_time", endTime)
+	urlValues.Add("period", fmt.Sprintf("%d", period))
+	urlValues.Add("dimensions", "aggregation_period:hourly,host:all")
 
-	queryParameters := map[string]string{
-		"name":       metricName,
-		"statistics": "avg",
-		"start_time": startTime,
-		"end_time":   endTime,
-		"period":     fmt.Sprintf("%d", period),
+	monascaURL, err := monClient.createMonascaAPIURL(path, urlValues)
+	if err != nil {
+		t.Errorf("Error %s when creating Monasca API", err.Error())
 	}
-
-	dimensions := map[string]string{"aggregation_period": "hourly", "host": "all"}
-	url := createMonascaAPIURL(path, queryParameters, dimensions)
-
 	expected := baseURL + "/" + path + "?" + "dimensions=aggregation_period%3Ahourly%2Chost%3Aall&end_time=2017-02-27T08%3A00%3A00Z&name=cpu.idle_perc&period=3600&start_time=2017-02-27T06%3A00%3A00Z&statistics=avg"
-	if expected != url {
-		t.Errorf("Expected '%v' but was '%v'", expected, url)
+	if expected != monascaURL {
+		t.Errorf("Expected '%v' but was '%v'", expected, monascaURL)
 	}
 }

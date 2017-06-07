@@ -17,6 +17,7 @@ package monascaclient
 import (
 	"encoding/json"
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
+	"net/url"
 )
 
 const timeFormat = "2006-01-02T15:04:05Z"
@@ -41,6 +42,32 @@ func GetMeasurements(measurementQuery *models.MeasurementQuery) (*models.Measure
 	return monClient.GetMeasurements(measurementQuery)
 }
 
+func CreateMetric(tenantID *string, metricRequestBody *models.MetricRequestBody) (error) {
+	return monClient.CreateMetric(tenantID, metricRequestBody)
+}
+
+
+func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.MetricRequestBody) (error) {
+	urlValues := url.Values{}
+	if tenantID != nil {
+		urlValues.Add("tenant_id", *tenantID)
+	}
+	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics", urlValues)
+	if URLerr != nil {
+		return URLerr
+	}
+	byteInput, marshalErr  := json.Marshal(*metricRequestBody)
+	if marshalErr != nil{
+		return marshalErr
+	}
+	monascaErr := c.callMonascaNoContent(monascaURL, "POST", &byteInput)
+	if monascaErr != nil {
+		return monascaErr
+	}
+
+	return nil
+}
+
 func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
 	urlValues := convertStructToQueryParameters(metricQuery)
 
@@ -49,7 +76,7 @@ func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, e
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -71,7 +98,7 @@ func (c *Client) GetDimensionValues(dimensionQuery *models.DimensionValueQuery) 
 		return nil, err
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -98,7 +125,7 @@ func (c *Client) GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([
 		return nil, err
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -125,7 +152,7 @@ func (c *Client) GetStatistics(statisticsQuery *models.StatisticQuery) (*models.
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -146,7 +173,7 @@ func (c *Client) GetMeasurements(measurementQuery *models.MeasurementQuery) (*mo
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}

@@ -35,3 +35,11 @@ type MetricQuery struct {
 	Offset     	*int               	`queryParameter:"offset"`
 	Limit      	*int               	`queryParameter:"limit"`
 }
+
+type MetricRequestBody struct {
+	Name       	*string            	`json:"name,omitempty"`
+	Dimensions 	*map[string]string 	`json:"dimensions,omitempty"`
+	Timestamp	*int64			`json:"timestamp,omitempty"`
+	Value 		*float64		`json:"value,omitempty"`
+	ValueMeta	*map[string]string	`json:"value_meta,omitempty"`
+}

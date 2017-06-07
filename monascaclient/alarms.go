@@ -35,9 +35,12 @@ func PatchAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*mod
 	return monClient.PatchAlarm(alarmID, alarmRequestBody)
 }
 
+func DeleteAlarm(alarmID string) (error) {
+	return monClient.DeleteAlarm(alarmID)
+}
+
 func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
 	urlValues := convertStructToQueryParameters(alarmQuery)
-
 
 	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/alarms", urlValues)
 
@@ -45,7 +48,7 @@ func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsRespons
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -68,7 +71,7 @@ func (c *Client) GetAlarm(alarmID string) (*models.Alarm, error) {
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -96,7 +99,7 @@ func (c *Client) UpdateAlarm(alarmID string, alarmRequestBody *models.AlarmReque
 		return nil, marshalErr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "PUT", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PUT", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -124,7 +127,7 @@ func (c *Client) PatchAlarm(alarmID string, alarmRequestBody *models.AlarmReques
 		return nil, marshalErr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL, "PATCH", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PATCH", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -136,4 +139,21 @@ func (c *Client) PatchAlarm(alarmID string, alarmRequestBody *models.AlarmReques
 	}
 
 	return &alarm, nil
+}
+
+
+func (c *Client) DeleteAlarm(alarmID string) (error) {
+	path := "v2.0/alarms/" + alarmID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+	if URLerr != nil {
+		return URLerr
+	}
+
+	monascaErr := c.callMonascaNoContent(monascaURL,"DELETE", nil)
+	if monascaErr != nil {
+		return monascaErr
+	}
+
+	return nil
 }

@@ -39,6 +39,10 @@ func PatchNotificationMethod(notificationID string, notificationRequestBody *mod
 	return monClient.PatchNotificationMethod(notificationID, notificationRequestBody)
 }
 
+func DeleteNotificationMethod(notificationID string) (error) {
+	return monClient.DeleteNotificationMethod(notificationID)
+}
+
 func (c *Client) GetNotificationMethods(notificationQuery *models.NotificationQuery) (*models.NotificationResponse, error) {
 	urlValues := convertStructToQueryParameters(notificationQuery)
 
@@ -47,7 +51,7 @@ func (c *Client) GetNotificationMethods(notificationQuery *models.NotificationQu
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL,"GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL,"GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -71,7 +75,7 @@ func (c *Client) GetNotificationMethod(notificationMethodID string, notification
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonasca(monascaURL,"GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL,"GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -86,7 +90,6 @@ func (c *Client) GetNotificationMethod(notificationMethodID string, notification
 }
 
 func (c *Client) CreateNotificationMethod(notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
-
 	path := "v2.0/notification-methods"
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -98,7 +101,7 @@ func (c *Client) CreateNotificationMethod(notificationRequestBody *models.Notifi
 	if marshalErr != nil{
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonasca(monascaURL,"POST", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL,"POST", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -113,8 +116,7 @@ func (c *Client) CreateNotificationMethod(notificationRequestBody *models.Notifi
 }
 
 func (c *Client) UpdateNotificationMethod(notificationID string, notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
-
-	path := "v2.0/notification-methods" + notificationID
+	path := "v2.0/notification-methods/" + notificationID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
 	if URLerr != nil {
@@ -125,7 +127,7 @@ func (c *Client) UpdateNotificationMethod(notificationID string, notificationReq
 	if marshalErr != nil{
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonasca(monascaURL,"PUT", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL,"PUT", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -140,8 +142,7 @@ func (c *Client) UpdateNotificationMethod(notificationID string, notificationReq
 }
 
 func (c *Client) PatchNotificationMethod(notificationID string, notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
-
-	path := "v2.0/notification-methods" + notificationID
+	path := "v2.0/notification-methods/" + notificationID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
 	if URLerr != nil {
@@ -152,7 +153,7 @@ func (c *Client) PatchNotificationMethod(notificationID string, notificationRequ
 	if marshalErr != nil{
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonasca(monascaURL,"PATCH", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL,"PATCH", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -164,4 +165,20 @@ func (c *Client) PatchNotificationMethod(notificationID string, notificationRequ
 	}
 
 	return &notificationMethodElement, nil
+}
+
+func (c *Client) DeleteNotificationMethod(notificationID string) (error) {
+	path := "v2.0/notification-methods/" + notificationID
+
+	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+	if URLerr != nil {
+		return URLerr
+	}
+
+	monascaErr := c.callMonascaNoContent(monascaURL,"DELETE", nil)
+	if monascaErr != nil {
+		return monascaErr
+	}
+
+	return nil
 }

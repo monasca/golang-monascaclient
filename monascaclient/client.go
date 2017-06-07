@@ -100,7 +100,9 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) ([]byte, error) {
+
+
+func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) (*http.Response, error) {
 	var req *http.Request
 	var err error
 
@@ -140,13 +142,37 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 		return nil, err
 	}
 
+	return resp, err
+}
+
+func (c *Client) callMonascaNoContent(monascaURL string, method string, requestBody *[]byte) (error) {
+	resp, err := c.callMonasca(monascaURL, method, requestBody)
+	if err != nil || resp == nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 204 {
+		return fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
+	}
+	return nil
+}
+
+func (c *Client) callMonascaReturnBody(monascaURL string, method string, requestBody *[]byte) ([]byte, error) {
+	resp, err := c.callMonasca(monascaURL, method, requestBody)
+	if err != nil || resp == nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 && resp.StatusCode != 204 && resp.StatusCode != 201  {
+	if resp.StatusCode != 200 && resp.StatusCode != 201  {
 		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
 	}
 
@@ -167,3 +193,4 @@ func (c *Client) createMonascaAPIURL(path string, urlValues url.Values) (string,
 
 	return monascaURL.String(), nil
 }
+
