@@ -87,7 +87,6 @@ func (c *Client) SetBaseURL(url string) {
 	c.baseURL = url
 }
 
-// Value of true should only be used for testing!!!
 func (c *Client) SetInsecure(insecure bool) {
 	c.allowInsecure = insecure
 }
