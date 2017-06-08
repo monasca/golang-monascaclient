@@ -192,4 +192,3 @@ func (c *Client) createMonascaAPIURL(path string, urlValues url.Values) (string,
 
 	return monascaURL.String(), nil
 }
-

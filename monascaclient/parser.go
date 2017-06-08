@@ -63,7 +63,7 @@ func addQueryParameter(value reflect.Value, key string, values *url.Values) {
 			}
 			// Make sure dimensions are always in correct order to ensure tests pass
 			sort.Strings(dimensionsSlice)
-			(*values).Add("dimensions", strings.Join(dimensionsSlice, ","))
+			(*values).Add(key, strings.Join(dimensionsSlice, ","))
 		}
 	}
 }
