@@ -60,12 +60,7 @@ func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.Metric
 	if marshalErr != nil{
 		return marshalErr
 	}
-	monascaErr := c.callMonascaNoContent(monascaURL, "POST", &byteInput)
-	if monascaErr != nil {
-		return monascaErr
-	}
-
-	return nil
+	return c.callMonascaNoContent(monascaURL, "POST", &byteInput)
 }
 
 func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {

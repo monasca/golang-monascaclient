@@ -174,10 +174,5 @@ func (c *Client) DeleteAlarmDefinition(alarmDefinitionID string) (error) {
 		return URLerr
 	}
 
-	monascaErr := c.callMonascaNoContent(monascaURL,"DELETE", nil)
-	if monascaErr != nil {
-		return monascaErr
-	}
-
-	return nil
+	return c.callMonascaNoContent(monascaURL,"DELETE", nil)
 }

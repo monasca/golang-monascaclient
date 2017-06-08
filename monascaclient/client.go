@@ -111,6 +111,10 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 		req, err = http.NewRequest(method, monascaURL, bytes.NewBuffer(*requestBody))
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -155,7 +159,7 @@ func (c *Client) callMonascaNoContent(monascaURL string, method string, requestB
 		return err
 	}
 	if resp.StatusCode != 204 {
-		return fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
+		return fmt.Errorf("Error: %d %s", resp.StatusCode, body)
 	}
 	return nil
 }
@@ -172,7 +176,7 @@ func (c *Client) callMonascaReturnBody(monascaURL string, method string, request
 		return nil, err
 	}
 	if resp.StatusCode != 200 && resp.StatusCode != 201  {
-		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
+		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, body)
 	}
 
 	return body, nil
