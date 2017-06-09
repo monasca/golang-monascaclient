@@ -20,7 +20,10 @@ import (
 	"net/url"
 )
 
-const timeFormat = "2006-01-02T15:04:05Z"
+const (
+	timeFormat      = "2006-01-02T15:04:05Z"
+	metricsBasePath = "v2.0/metrics"
+)
 
 func GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
 	return monClient.GetMetrics(metricQuery)
@@ -51,7 +54,7 @@ func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.Metric
 	if tenantID != nil {
 		urlValues.Add("tenant_id", *tenantID)
 	}
-	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics", urlValues)
+	monascaURL, URLerr := c.createMonascaAPIURL(metricsBasePath, urlValues)
 	if URLerr != nil {
 		return URLerr
 	}
@@ -63,20 +66,8 @@ func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.Metric
 }
 
 func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
-	urlValues := convertStructToQueryParameters(metricQuery)
-
-	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics", urlValues)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	metricsResponse := models.MetricsResponse{}
-	err := json.Unmarshal(body, &metricsResponse)
+	metricsResponse := new(models.MetricsResponse)
+	err := c.callMonascaGet(metricsBasePath, metricQuery, metricsResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -85,49 +76,18 @@ func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, e
 }
 
 func (c *Client) GetDimensionValues(dimensionQuery *models.DimensionValueQuery) ([]string, error) {
-	urlValues := convertStructToQueryParameters(dimensionQuery)
-
-	monascaURL, err := c.createMonascaAPIURL("/v2.0/metrics/dimensions/names/values", urlValues)
-	if err != nil {
-		return nil, err
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	var response models.DimensionValueResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	results := []string{}
-	for _, value := range response.Elements {
-		results = append(results, value.Value)
-	}
-
-	return results, nil
+	return c.getDimensionQuery("/dimensions/names/values", dimensionQuery)
 }
 
 func (c *Client) GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([]string, error) {
-	urlValues := convertStructToQueryParameters(dimensionQuery)
+	return c.getDimensionQuery("/dimensions/names/names", dimensionQuery)
+}
 
-	monascaURL, err := c.createMonascaAPIURL("/v2.0/metrics/dimensions/names", urlValues)
+func (c *Client) getDimensionQuery(path string, dimensionQuery interface{}) ([]string, error) {
+	response := new(models.DimensionValueResponse)
+	err := c.callMonascaGet(metricsBasePath+path, dimensionQuery, response)
 	if err != nil {
 		return nil, err
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	var response models.DimensionValueResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		panic(err.Error())
 	}
 
 	results := []string{}
@@ -139,43 +99,21 @@ func (c *Client) GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([
 }
 
 func (c *Client) GetStatistics(statisticsQuery *models.StatisticQuery) (*models.StatisticsResponse, error) {
-	urlValues := convertStructToQueryParameters(statisticsQuery)
-
-	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics/statistics", urlValues)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-	statisticsResponse := models.StatisticsResponse{}
-	err := json.Unmarshal(body, &statisticsResponse)
+	statisticsResponse := new(models.StatisticsResponse)
+	err := c.callMonascaGet(metricsBasePath+"/statistics", statisticsQuery, statisticsResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return &statisticsResponse, nil
+	return statisticsResponse, nil
 }
 
-func (c *Client) GetMeasurements(measurementQuery *models.MeasurementQuery) (*models.MeasurementsResponse, error) {
-	urlValues := convertStructToQueryParameters(measurementQuery)
-
-	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/metrics/measurements", urlValues)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-	measurementResponse := models.MeasurementsResponse{}
-	err := json.Unmarshal(body, &measurementResponse)
+func (c *Client) GetMeasurements(measurementsQuery *models.MeasurementQuery) (*models.MeasurementsResponse, error) {
+	measurementsResponse := new(models.MeasurementsResponse)
+	err := c.callMonascaGet(metricsBasePath+"/measurements", measurementsQuery, measurementsResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return &measurementResponse, nil
+	return measurementsResponse, nil
 }

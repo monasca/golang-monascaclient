@@ -15,8 +15,11 @@
 package monascaclient
 
 import (
-	"encoding/json"
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
+)
+
+const (
+	alarmsBasePath = "v2.0/alarms"
 )
 
 func GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
@@ -40,114 +43,44 @@ func DeleteAlarm(alarmID string) error {
 }
 
 func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
-	urlValues := convertStructToQueryParameters(alarmQuery)
-
-	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/alarms", urlValues)
-
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	alarmsResponse := models.AlarmsResponse{}
-	err := json.Unmarshal(body, &alarmsResponse)
+	alarmsResponse := new(models.AlarmsResponse)
+	err := c.callMonascaGet(alarmsBasePath, alarmQuery, alarmsResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return &alarmsResponse, nil
+	return alarmsResponse, nil
 }
 
 func (c *Client) GetAlarm(alarmID string) (*models.Alarm, error) {
-	path := "v2.0/alarms/" + alarmID
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	alarm := models.Alarm{}
-	err := json.Unmarshal(body, &alarm)
+	path := alarmsBasePath + "/" + alarmID
+	alarm := new(models.Alarm)
+	err := c.callMonascaGet(path, nil, alarm)
 	if err != nil {
 		return nil, err
 	}
 
-	return &alarm, nil
+	return alarm, nil
 }
 
 func (c *Client) UpdateAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
-	path := "v2.0/alarms/" + alarmID
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	byteInput, marshalErr := json.Marshal(*alarmRequestBody)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PUT", &byteInput)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	alarm := models.Alarm{}
-	err := json.Unmarshal(body, &alarm)
-	if err != nil {
-		return nil, err
-	}
-
-	return &alarm, nil
+	return c.sendAlarm(alarmID, "PUT", alarmRequestBody)
 }
 
 func (c *Client) PatchAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
-	path := "v2.0/alarms/" + alarmID
+	return c.sendAlarm(alarmID, "PATCH", alarmRequestBody)
+}
 
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	byteInput, marshalErr := json.Marshal(*alarmRequestBody)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PATCH", &byteInput)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	alarm := models.Alarm{}
-	err := json.Unmarshal(body, &alarm)
+func (c *Client) sendAlarm(alarmID string, method string, alarmRequestBody *models.AlarmRequestBody) (*models.Alarm, error) {
+	alarmsElement := new(models.Alarm)
+	err := c.callMonascaWithBody(alarmsBasePath, alarmID, method, alarmRequestBody, alarmsElement)
 	if err != nil {
 		return nil, err
 	}
 
-	return &alarm, nil
+	return alarmsElement, nil
 }
 
 func (c *Client) DeleteAlarm(alarmID string) error {
-	path := "v2.0/alarms/" + alarmID
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-	if URLerr != nil {
-		return URLerr
-	}
-
-	return c.callMonascaNoContent(monascaURL, "DELETE", nil)
+	return c.callMonascaDelete(alarmsBasePath, alarmID)
 }
