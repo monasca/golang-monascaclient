@@ -14,7 +14,23 @@
 
 package models
 
-type StatisticsResponse struct {
-	Links    []Link             `json:"links"`
-	Elements []StatisticElement `json:"elements"`
+type DimensionValueResponse struct {
+	Links    []Link           `json:"links"`
+	Elements []DimensionValue `json:"elements"`
+}
+
+type DimensionValue struct {
+	Value string `json:"dimension_value"`
+}
+
+type DimensionNameQuery struct {
+	DimensionName *string `queryParameter:"dimension_name"`
+	DimensionValueQuery
+}
+
+type DimensionValueQuery struct {
+	TenantID *string `queryParameter:"tenant_id"`
+	Name     *string `queryParameter:"metric_name"`
+	Offset   *int    `queryParameter:"offset"`
+	Limit    *int    `queryParameter:"limit"`
 }

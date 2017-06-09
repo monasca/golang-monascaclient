@@ -14,11 +14,12 @@
 
 package models
 
-type DimensionValueResponse struct {
-	Links    []Link           `json:"links"`
-	Elements []DimensionValue `json:"elements"`
+type ResponseElement struct {
+	Links []Link `json:"links"`
+	ID    string `json:"id"`
 }
 
-type DimensionValue struct {
-	Value string `json:"dimension_value"`
+type Response struct {
+	Links    []Link        `json:"links"`
+	Elements []interface{} `json:"elements"`
 }

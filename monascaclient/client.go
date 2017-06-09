@@ -15,23 +15,19 @@
 package monascaclient
 
 import (
+	"bytes"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"github.com/monasca/golang-monascaclient/monascaclient/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"sort"
 	"strings"
 	"time"
 )
 
-const timeFormat = "2006-01-02T15:04:05Z"
-
 var (
 	defaultURL      = "http://localhost:8070"
-	defaultTimeout  = 10
+	defaultTimeout  = 60
 	defaultInsecure = false
 )
 
@@ -71,14 +67,6 @@ func SetHeaders(headers http.Header) {
 	monClient.SetHeaders(headers)
 }
 
-func GetMetrics(metricName string, dimensions map[string]string) ([]models.Metric, error) {
-	return monClient.GetMetrics(metricName, dimensions)
-}
-
-func GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
-	return monClient.GetStatistics(metricName, startTime, endTime, period, dimensions)
-}
-
 type Client struct {
 	baseURL        string
 	requestTimeout int
@@ -98,7 +86,6 @@ func (c *Client) SetBaseURL(url string) {
 	c.baseURL = url
 }
 
-// Value of true should only be used for testing!!!
 func (c *Client) SetInsecure(insecure bool) {
 	c.allowInsecure = insecure
 }
@@ -111,94 +98,19 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-func (p *Client) GetMetrics(metricName string, dimensions map[string]string) ([]models.Metric, error) {
-	queryParameters := map[string]string{
-		"name": metricName,
+func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) (*http.Response, error) {
+	var req *http.Request
+	var err error
+
+	if requestBody == nil {
+		req, err = http.NewRequest(method, monascaURL, nil)
+	} else {
+		req, err = http.NewRequest(method, monascaURL, bytes.NewBuffer(*requestBody))
 	}
 
-	monascaURL, URLerr := p.createMonascaAPIURL("v2.0/metrics", queryParameters, dimensions)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := p.callMonasca(monascaURL)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	metricsResponse := models.MetricsResponse{}
-	err := json.Unmarshal(body, &metricsResponse)
 	if err != nil {
 		return nil, err
 	}
-
-	return metricsResponse.Elements, nil
-}
-
-func (p *Client) GetDimensionValues(metricName, dimensionName string) ([]string, error) {
-	queryParameters := map[string]string{
-		"dimension_name": dimensionName,
-	}
-	if metricName != "" {
-		queryParameters["metric_name"] = metricName
-	}
-
-	monascaURL, err := p.createMonascaAPIURL("/v2.0/metrics/dimensions/names/values", queryParameters, map[string]string{})
-	if err != nil {
-		return nil, err
-	}
-
-	body, monascaErr := p.callMonasca(monascaURL)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	var response models.DimensionValueResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	results := []string{}
-	for _, value := range response.Elements {
-		results = append(results, value.Value)
-	}
-
-	return results, nil
-}
-
-func (p *Client) GetStatistics(metricName string, startTime time.Time, endTime time.Time, period int64, dimensions map[string]string) (*models.StatisticsResponse, error) {
-	// TODO: Review this entire function
-	// TODO: Handle errors. How does Go work?
-	queryParameters := map[string]string{
-		"name":       metricName,
-		"statistics": "avg",
-		"start_time": startTime.UTC().Format(timeFormat),
-		"end_time":   endTime.UTC().Format(timeFormat),
-		"period":     fmt.Sprintf("%d", period),
-	}
-
-	monascaURL, URLerr := p.createMonascaAPIURL("v2.0/metrics/statistics", queryParameters, dimensions)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := p.callMonasca(monascaURL)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-	statisticsResponse := models.StatisticsResponse{}
-	err := json.Unmarshal(body, &statisticsResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &statisticsResponse, nil
-}
-
-func (c *Client) callMonasca(monascaURL string) ([]byte, error) {
-
-	req, err := http.NewRequest("GET", monascaURL, nil)
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -229,20 +141,44 @@ func (c *Client) callMonasca(monascaURL string) ([]byte, error) {
 		return nil, err
 	}
 
+	return resp, err
+}
+
+func (c *Client) callMonascaNoContent(monascaURL string, method string, requestBody *[]byte) error {
+	resp, err := c.callMonasca(monascaURL, method, requestBody)
+	if err != nil || resp == nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 204 {
+		return fmt.Errorf("Error: %d %s", resp.StatusCode, body)
+	}
+	return nil
+}
+
+func (c *Client) callMonascaReturnBody(monascaURL string, method string, requestBody *[]byte) ([]byte, error) {
+	resp, err := c.callMonasca(monascaURL, method, requestBody)
+	if err != nil || resp == nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, string([]byte(body)))
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, body)
 	}
 
 	return body, nil
 }
 
-func (c *Client) createMonascaAPIURL(path string, queryParameters map[string]string, dimensions map[string]string) (string, error) {
+func (c *Client) createMonascaAPIURL(path string, urlValues url.Values) (string, error) {
 
 	monascaURL, parseErr := url.Parse(c.baseURL)
 	if parseErr != nil {
@@ -250,20 +186,9 @@ func (c *Client) createMonascaAPIURL(path string, queryParameters map[string]str
 	}
 	monascaURL.Path = path
 
-	q := url.Values{}
-	for key := range queryParameters {
-		q.Add(key, queryParameters[key])
+	if urlValues != nil {
+		monascaURL.RawQuery = urlValues.Encode()
 	}
-	if len(dimensions) > 0 {
-		dimensionsSlice := make([]string, 0, len(dimensions))
-		for key := range dimensions {
-			dimensionsSlice = append(dimensionsSlice, key+":"+dimensions[key])
-		}
-		// Make sure dimensions are always in correct order to ensure tests pass
-		sort.Strings(dimensionsSlice)
-		q.Add("dimensions", strings.Join(dimensionsSlice, ","))
-	}
-	monascaURL.RawQuery = q.Encode()
 
 	return monascaURL.String(), nil
 }
