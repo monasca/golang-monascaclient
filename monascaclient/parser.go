@@ -15,15 +15,15 @@
 package monascaclient
 
 import (
-	"time"
+	"fmt"
 	"net/url"
 	"reflect"
-	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
-func convertStructToQueryParameters(inputStruct interface{}) (url.Values){
+func convertStructToQueryParameters(inputStruct interface{}) url.Values {
 	urlValues := url.Values{}
 	values := reflect.ValueOf(inputStruct)
 	if values.IsNil() {
@@ -59,7 +59,7 @@ func addQueryParameter(value reflect.Value, key string, values *url.Values) {
 		if len(mapValue) > 0 {
 			dimensionsSlice := make([]string, 0, len(mapValue))
 			for key := range mapValue {
-				dimensionsSlice = append(dimensionsSlice, key + ":" + mapValue[key])
+				dimensionsSlice = append(dimensionsSlice, key+":"+mapValue[key])
 			}
 			// Make sure dimensions are always in correct order to ensure tests pass
 			sort.Strings(dimensionsSlice)

@@ -15,6 +15,7 @@
 package monascaclient
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -22,7 +23,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-	"bytes"
 )
 
 var (
@@ -82,7 +82,6 @@ func New() *Client {
 	}
 }
 
-
 func (c *Client) SetBaseURL(url string) {
 	c.baseURL = url
 }
@@ -99,8 +98,6 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-
-
 func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) (*http.Response, error) {
 	var req *http.Request
 	var err error
@@ -114,7 +111,6 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 	if err != nil {
 		return nil, err
 	}
-
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -148,7 +144,7 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 	return resp, err
 }
 
-func (c *Client) callMonascaNoContent(monascaURL string, method string, requestBody *[]byte) (error) {
+func (c *Client) callMonascaNoContent(monascaURL string, method string, requestBody *[]byte) error {
 	resp, err := c.callMonasca(monascaURL, method, requestBody)
 	if err != nil || resp == nil {
 		return err
@@ -175,7 +171,7 @@ func (c *Client) callMonascaReturnBody(monascaURL string, method string, request
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != 200 && resp.StatusCode != 201  {
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
 		return nil, fmt.Errorf("Error: %d %s", resp.StatusCode, body)
 	}
 

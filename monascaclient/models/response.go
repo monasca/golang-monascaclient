@@ -15,11 +15,11 @@
 package models
 
 type ResponseElement struct {
-	Links		[]Link		`json:"links"`
-	ID		string   	`json:"id"`
+	Links []Link `json:"links"`
+	ID    string `json:"id"`
 }
 
 type Response struct {
-	Links		[]Link        	`json:"links"`
-	Elements	[]interface{} 	`json:"elements"`
+	Links    []Link        `json:"links"`
+	Elements []interface{} `json:"elements"`
 }

@@ -15,20 +15,20 @@
 package monascaclient
 
 import (
-	"testing"
-	"time"
 	"net/url"
 	"reflect"
+	"testing"
+	"time"
 )
 
 type TestStruct struct {
-	TestString *string              `queryParameter:"test_string"`
-	TestTime   *time.Time           `queryParameter:"test_time"`
-	TestMap    *map[string]string	`queryParameter:"test_map"`
-	TestInt    *int			`queryParameter:"test_int"`
+	TestString *string            `queryParameter:"test_string"`
+	TestTime   *time.Time         `queryParameter:"test_time"`
+	TestMap    *map[string]string `queryParameter:"test_map"`
+	TestInt    *int               `queryParameter:"test_int"`
 }
 
-func TestStructConversionEmptyStruct(t *testing.T){
+func TestStructConversionEmptyStruct(t *testing.T) {
 	testStructInput := TestStruct{}
 	urlValuesExpected := url.Values{}
 	urlValuesReturned := convertStructToQueryParameters(&testStructInput)
@@ -38,10 +38,10 @@ func TestStructConversionEmptyStruct(t *testing.T){
 	}
 }
 
-func TestStructConversion(t *testing.T){
+func TestStructConversion(t *testing.T) {
 	inputString := "inputstring"
 	inputTime := time.Now()
-	inputMap := map[string]string{"key1":"value1", "key2":"value2", "key3":"value3"}
+	inputMap := map[string]string{"key1": "value1", "key2": "value2", "key3": "value3"}
 	inputInt := 3
 	testStructInput := TestStruct{&inputString, &inputTime, &inputMap,
 		&inputInt}
@@ -57,10 +57,10 @@ func TestStructConversion(t *testing.T){
 	}
 }
 
-func TestStructConversionPartiallyDefinedStruct(t *testing.T){
-	inputMap := map[string]string{"key1":"value1", "key2":"value2", "key3":"value3"}
+func TestStructConversionPartiallyDefinedStruct(t *testing.T) {
+	inputMap := map[string]string{"key1": "value1", "key2": "value2", "key3": "value3"}
 	inputInt := 3
-	testStructInput := TestStruct{TestMap:&inputMap, TestInt:&inputInt}
+	testStructInput := TestStruct{TestMap: &inputMap, TestInt: &inputInt}
 	urlValuesExpected := url.Values{}
 	urlValuesExpected.Add("test_map", "key1:value1,key2:value2,key3:value3")
 	urlValuesExpected.Add("test_int", "3")

@@ -17,37 +17,37 @@ package models
 import "time"
 
 type AlarmsResponse struct {
-	Links			[]Link			`json:"links"`
-	Elements 		[]Alarm 		`json:"elements"`
+	Links    []Link  `json:"links"`
+	Elements []Alarm `json:"elements"`
 }
 
 type Alarm struct {
-	Metrics 	      	[]Metric  		`json:"metrics"`
-	LifecycleState 	      	string    		`json:"lifecycle_state"`
-	State 	    	      	string    		`json:"state"`
-	Link		      	string    		`json:"link"`
-	UpdatedTimestamp      	time.Time 		`json:"updated_timestamp"`
-	CreatedTimestamp      	time.Time 		`json:"created_timestamp"`
-	StateUpdatedTimestamp 	time.Time 		`json:"state_updated_timestamp"`
+	Metrics               []Metric  `json:"metrics"`
+	LifecycleState        string    `json:"lifecycle_state"`
+	State                 string    `json:"state"`
+	Link                  string    `json:"link"`
+	UpdatedTimestamp      time.Time `json:"updated_timestamp"`
+	CreatedTimestamp      time.Time `json:"created_timestamp"`
+	StateUpdatedTimestamp time.Time `json:"state_updated_timestamp"`
 	ResponseElement
 }
 
 type AlarmQuery struct {
-	AlarmDefinitionID     	*string 		`queryParameter:"alarm_definition_id"`
-	MetricName	      	*string            	`queryParameter:"metric_name"`
-	MetricDimensions      	*map[string]string 	`queryParameter:"metric_dimensions"`
-	State   	      	*string 	      	`queryParameter:"state"`
-	Severity     	      	*string 	      	`queryParameter:"severity"`
-	LifecycleState        	*string 	      	`queryParameter:"lifecycle_state"`
-	Link                  	*string 	      	`queryParameter:"link"`
-	StateUpdatedStartTime 	*time.Time 	 	`queryParameter:"state_updated_start_time"`
-	SortBy                	*string 	    	`queryParameter:"sort_by"`
-	Offset                	*int       	 	`queryParameter:"offset"`
-	Limit                 	*int       	 	`queryParameter:"limit"`
+	AlarmDefinitionID     *string            `queryParameter:"alarm_definition_id"`
+	MetricName            *string            `queryParameter:"metric_name"`
+	MetricDimensions      *map[string]string `queryParameter:"metric_dimensions"`
+	State                 *string            `queryParameter:"state"`
+	Severity              *string            `queryParameter:"severity"`
+	LifecycleState        *string            `queryParameter:"lifecycle_state"`
+	Link                  *string            `queryParameter:"link"`
+	StateUpdatedStartTime *time.Time         `queryParameter:"state_updated_start_time"`
+	SortBy                *string            `queryParameter:"sort_by"`
+	Offset                *int               `queryParameter:"offset"`
+	Limit                 *int               `queryParameter:"limit"`
 }
 
 type AlarmRequestBody struct {
-	State   	      	*string 	      	`json:"state,omitempty"`
-	LifecycleState        	*string 	      	`json:"lifecycle_state,omitempty"`
-	Link                  	*string 	      	`json:"link,omitempty"`
+	State          *string `json:"state,omitempty"`
+	LifecycleState *string `json:"lifecycle_state,omitempty"`
+	Link           *string `json:"link,omitempty"`
 }

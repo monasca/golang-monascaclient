@@ -17,29 +17,28 @@ package models
 import "time"
 
 type StatisticsResponse struct {
-	Links		[]Link			`json:"links"`
-	Elements	[]StatisticElement	`json:"elements"`
+	Links    []Link             `json:"links"`
+	Elements []StatisticElement `json:"elements"`
 }
 
 type StatisticElement struct {
-	ID		string            	`json:"id"`
-	Name		string            	`json:"name"`
-	Dimensions	map[string]string 	`json:"dimensions"`
-	Columns		[]string          	`json:"columns"`
-	Statistics	[][]interface{}   	`json:"statistics"`
+	ID         string            `json:"id"`
+	Name       string            `json:"name"`
+	Dimensions map[string]string `json:"dimensions"`
+	Columns    []string          `json:"columns"`
+	Statistics [][]interface{}   `json:"statistics"`
 }
 
-
 type StatisticQuery struct {
-	TenantID   	*string  	      	`queryParameter:"tenant_id"`
-	Name       	*string  	      	`queryParameter:"name"`
-	Dimensions 	*map[string]string 	`queryParameter:"dimensions"`
-	Statistics 	*string 	      	`queryParameter:"statistics"`
-	StartTime  	*time.Time 	      	`queryParameter:"start_time"`
-	EndTime    	*time.Time 	      	`queryParameter:"end_time"`
-	Period     	*int       	      	`queryParameter:"period"`
-	Offset     	*int       	      	`queryParameter:"offset"`
-	Limit      	*int       	      	`queryParameter:"limit"`
-	Merge      	*bool              	`queryParameter:"merge_metrics"`
-	GroupBy    	*string            	`queryParameter:"group_by"`
+	TenantID   *string            `queryParameter:"tenant_id"`
+	Name       *string            `queryParameter:"name"`
+	Dimensions *map[string]string `queryParameter:"dimensions"`
+	Statistics *string            `queryParameter:"statistics"`
+	StartTime  *time.Time         `queryParameter:"start_time"`
+	EndTime    *time.Time         `queryParameter:"end_time"`
+	Period     *int               `queryParameter:"period"`
+	Offset     *int               `queryParameter:"offset"`
+	Limit      *int               `queryParameter:"limit"`
+	Merge      *bool              `queryParameter:"merge_metrics"`
+	GroupBy    *string            `queryParameter:"group_by"`
 }

@@ -15,45 +15,45 @@
 package models
 
 type AlarmDefinitionsResponse struct {
-	Links    		[]Link           	 `json:"links"`
-	Elements 		[]AlarmDefinitionElement `json:"elements"`
+	Links    []Link                   `json:"links"`
+	Elements []AlarmDefinitionElement `json:"elements"`
 }
 
 type AlarmDefinitionElement struct {
 	AlarmDefinition
 	// ActionsEnabled 	bool     `json:"actions_enabled"`
-	Deterministic 		bool     		`json:"deterministic"`
+	Deterministic bool `json:"deterministic"`
 	ResponseElement
 }
 
 type AlarmDefinition struct {
-	Description         	string   		`json:"description,omitempty"`
-	Severity            	string   		`json:"severity,omitempty"`
-	AlarmActions        	[]string 		`json:"alarm_actions,omitempty"`
-	OkActions           	[]string 		`json:"ok_actions,omitempty"`
-	MatchBy             	[]string 		`json:"match_by,omitempty"`
-	UndeterminedActions 	[]string 		`json:"undetermined_actions,omitempty"`
-	Expression          	string   		`json:"expression,omitempty"`
-	Name                	string   		`json:"name,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	Severity            string   `json:"severity,omitempty"`
+	AlarmActions        []string `json:"alarm_actions,omitempty"`
+	OkActions           []string `json:"ok_actions,omitempty"`
+	MatchBy             []string `json:"match_by,omitempty"`
+	UndeterminedActions []string `json:"undetermined_actions,omitempty"`
+	Expression          string   `json:"expression,omitempty"`
+	Name                string   `json:"name,omitempty"`
 }
 
 type AlarmDefinitionQuery struct {
-	Name       		*string  	      	`queryParameter:"name"`
-	Dimensions 		*map[string]string	`queryParameter:"dimensions"`
-	Severity   		*string 	      	`queryParameter:"severity"`
-	SortBy     		*string 	      	`queryParameter:"sort_by"`
-	Offset     		*int       	      	`queryParameter:"offset"`
-	Limit      		*int      	      	`queryParameter:"limit"`
+	Name       *string            `queryParameter:"name"`
+	Dimensions *map[string]string `queryParameter:"dimensions"`
+	Severity   *string            `queryParameter:"severity"`
+	SortBy     *string            `queryParameter:"sort_by"`
+	Offset     *int               `queryParameter:"offset"`
+	Limit      *int               `queryParameter:"limit"`
 }
 
 type AlarmDefinitionRequestBody struct {
-	Description         	*string   		`json:"description,omitempty"`
-	Severity            	*string   		`json:"severity,omitempty"`
-	AlarmActions        	*[]string 		`json:"alarm_actions,omitempty"`
-	OkActions           	*[]string 		`json:"ok_actions,omitempty"`
-	MatchBy             	*[]string 		`json:"match_by,omitempty"`
-	UndeterminedActions 	*[]string 		`json:"undetermined_actions,omitempty"`
-	Expression          	*string   		`json:"expression,omitempty"`
-	Name                	*string   		`json:"name,omitempty"`
-	ActionsEnabled		*bool			`json:"actions_enabled,omitempty"`
+	Description         *string   `json:"description,omitempty"`
+	Severity            *string   `json:"severity,omitempty"`
+	AlarmActions        *[]string `json:"alarm_actions,omitempty"`
+	OkActions           *[]string `json:"ok_actions,omitempty"`
+	MatchBy             *[]string `json:"match_by,omitempty"`
+	UndeterminedActions *[]string `json:"undetermined_actions,omitempty"`
+	Expression          *string   `json:"expression,omitempty"`
+	Name                *string   `json:"name,omitempty"`
+	ActionsEnabled      *bool     `json:"actions_enabled,omitempty"`
 }

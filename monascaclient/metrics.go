@@ -42,12 +42,11 @@ func GetMeasurements(measurementQuery *models.MeasurementQuery) (*models.Measure
 	return monClient.GetMeasurements(measurementQuery)
 }
 
-func CreateMetric(tenantID *string, metricRequestBody *models.MetricRequestBody) (error) {
+func CreateMetric(tenantID *string, metricRequestBody *models.MetricRequestBody) error {
 	return monClient.CreateMetric(tenantID, metricRequestBody)
 }
 
-
-func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.MetricRequestBody) (error) {
+func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.MetricRequestBody) error {
 	urlValues := url.Values{}
 	if tenantID != nil {
 		urlValues.Add("tenant_id", *tenantID)
@@ -56,8 +55,8 @@ func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.Metric
 	if URLerr != nil {
 		return URLerr
 	}
-	byteInput, marshalErr  := json.Marshal(*metricRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*metricRequestBody)
+	if marshalErr != nil {
 		return marshalErr
 	}
 	return c.callMonascaNoContent(monascaURL, "POST", &byteInput)

@@ -15,22 +15,22 @@
 package models
 
 type DimensionValueResponse struct {
-	Links			[]Link          	`json:"links"`
-	Elements 		[]DimensionValue	`json:"elements"`
+	Links    []Link           `json:"links"`
+	Elements []DimensionValue `json:"elements"`
 }
 
 type DimensionValue struct {
-	Value 			string 			`json:"dimension_value"`
+	Value string `json:"dimension_value"`
 }
 
 type DimensionNameQuery struct {
-	DimensionName 		*string 		`queryParameter:"dimension_name"`
+	DimensionName *string `queryParameter:"dimension_name"`
 	DimensionValueQuery
 }
 
 type DimensionValueQuery struct {
-	TenantID   		*string  		`queryParameter:"tenant_id"`
-	Name       		*string  		`queryParameter:"metric_name"`
-	Offset     		*int       		`queryParameter:"offset"`
-	Limit      		*int       		`queryParameter:"limit"`
+	TenantID *string `queryParameter:"tenant_id"`
+	Name     *string `queryParameter:"metric_name"`
+	Offset   *int    `queryParameter:"offset"`
+	Limit    *int    `queryParameter:"limit"`
 }

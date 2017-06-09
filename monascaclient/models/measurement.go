@@ -17,26 +17,26 @@ package models
 import "time"
 
 type MeasurementsResponse struct {
-	Links		[]Link   		`json:"links"`
-	Elements 	[]MeasurementElement	`json:"elements"`
+	Links    []Link               `json:"links"`
+	Elements []MeasurementElement `json:"elements"`
 }
 
 type MeasurementElement struct {
-	ID         	string            	`json:"id"`
-	Name       	string            	`json:"name"`
-	Dimensions 	map[string]string 	`json:"dimensions"`
-	Columns    	[]string          	`json:"columns"`
-	Measurements 	[][]interface{}   	`json:"measurements"`
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	Dimensions   map[string]string `json:"dimensions"`
+	Columns      []string          `json:"columns"`
+	Measurements [][]interface{}   `json:"measurements"`
 }
 
 type MeasurementQuery struct {
-	TenantID   	*string			`queryParameter:"tenant_id"`
-	Name       	*string  		`queryParameter:"name"`
-	Dimensions 	*map[string]string 	`queryParameter:"dimensions"`
-	StartTime  	*time.Time 		`queryParameter:"start_time"`
-	EndTime    	*time.Time 		`queryParameter:"end_time"`
-	Offset     	*int       		`queryParameter:"offset"`
-	Limit      	*int       		`queryParameter:"limit"`
-	Merge      	*bool      		`queryParameter:"merge_metrics"`
-	GroupBy    	*string    		`queryParameter:"group_by"`
+	TenantID   *string            `queryParameter:"tenant_id"`
+	Name       *string            `queryParameter:"name"`
+	Dimensions *map[string]string `queryParameter:"dimensions"`
+	StartTime  *time.Time         `queryParameter:"start_time"`
+	EndTime    *time.Time         `queryParameter:"end_time"`
+	Offset     *int               `queryParameter:"offset"`
+	Limit      *int               `queryParameter:"limit"`
+	Merge      *bool              `queryParameter:"merge_metrics"`
+	GroupBy    *string            `queryParameter:"group_by"`
 }

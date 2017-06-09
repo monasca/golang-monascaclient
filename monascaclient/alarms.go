@@ -15,8 +15,8 @@
 package monascaclient
 
 import (
-	"github.com/monasca/golang-monascaclient/monascaclient/models"
 	"encoding/json"
+	"github.com/monasca/golang-monascaclient/monascaclient/models"
 )
 
 func GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
@@ -35,7 +35,7 @@ func PatchAlarm(alarmID string, alarmRequestBody *models.AlarmRequestBody) (*mod
 	return monClient.PatchAlarm(alarmID, alarmRequestBody)
 }
 
-func DeleteAlarm(alarmID string) (error) {
+func DeleteAlarm(alarmID string) error {
 	return monClient.DeleteAlarm(alarmID)
 }
 
@@ -94,8 +94,8 @@ func (c *Client) UpdateAlarm(alarmID string, alarmRequestBody *models.AlarmReque
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*alarmRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*alarmRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
 
@@ -122,8 +122,8 @@ func (c *Client) PatchAlarm(alarmID string, alarmRequestBody *models.AlarmReques
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*alarmRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*alarmRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
 
@@ -141,8 +141,7 @@ func (c *Client) PatchAlarm(alarmID string, alarmRequestBody *models.AlarmReques
 	return &alarm, nil
 }
 
-
-func (c *Client) DeleteAlarm(alarmID string) (error) {
+func (c *Client) DeleteAlarm(alarmID string) error {
 	path := "v2.0/alarms/" + alarmID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -150,5 +149,5 @@ func (c *Client) DeleteAlarm(alarmID string) (error) {
 		return URLerr
 	}
 
-	return c.callMonascaNoContent(monascaURL,"DELETE", nil)
+	return c.callMonascaNoContent(monascaURL, "DELETE", nil)
 }

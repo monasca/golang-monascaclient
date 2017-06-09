@@ -15,11 +15,11 @@
 package monascaclient
 
 import (
-	"github.com/monasca/golang-monascaclient/monascaclient/models"
 	"encoding/json"
+	"github.com/monasca/golang-monascaclient/monascaclient/models"
 )
 
-func GetNotificationMethods(notificationQuery *models.NotificationQuery) (*models.NotificationResponse, error){
+func GetNotificationMethods(notificationQuery *models.NotificationQuery) (*models.NotificationResponse, error) {
 	return monClient.GetNotificationMethods(notificationQuery)
 }
 
@@ -39,7 +39,7 @@ func PatchNotificationMethod(notificationID string, notificationRequestBody *mod
 	return monClient.PatchNotificationMethod(notificationID, notificationRequestBody)
 }
 
-func DeleteNotificationMethod(notificationID string) (error) {
+func DeleteNotificationMethod(notificationID string) error {
 	return monClient.DeleteNotificationMethod(notificationID)
 }
 
@@ -51,7 +51,7 @@ func (c *Client) GetNotificationMethods(notificationQuery *models.NotificationQu
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -75,7 +75,7 @@ func (c *Client) GetNotificationMethod(notificationMethodID string, notification
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -97,11 +97,11 @@ func (c *Client) CreateNotificationMethod(notificationRequestBody *models.Notifi
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*notificationRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*notificationRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"POST", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "POST", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -123,11 +123,11 @@ func (c *Client) UpdateNotificationMethod(notificationID string, notificationReq
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*notificationRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*notificationRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"PUT", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PUT", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -149,11 +149,11 @@ func (c *Client) PatchNotificationMethod(notificationID string, notificationRequ
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*notificationRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*notificationRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"PATCH", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PATCH", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -167,7 +167,7 @@ func (c *Client) PatchNotificationMethod(notificationID string, notificationRequ
 	return &notificationMethodElement, nil
 }
 
-func (c *Client) DeleteNotificationMethod(notificationID string) (error) {
+func (c *Client) DeleteNotificationMethod(notificationID string) error {
 	path := "v2.0/notification-methods/" + notificationID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -175,5 +175,5 @@ func (c *Client) DeleteNotificationMethod(notificationID string) (error) {
 		return URLerr
 	}
 
-	return c.callMonascaNoContent(monascaURL,"DELETE", nil)
+	return c.callMonascaNoContent(monascaURL, "DELETE", nil)
 }

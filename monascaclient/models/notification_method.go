@@ -15,8 +15,8 @@
 package models
 
 type NotificationResponse struct {
-	Links		[]Link   		`json:"links"`
-	Elements 	[]NotificationElement	`json:"elements"`
+	Links    []Link                `json:"links"`
+	Elements []NotificationElement `json:"elements"`
 }
 
 type NotificationElement struct {
@@ -25,21 +25,21 @@ type NotificationElement struct {
 }
 
 type Notification struct {
-	Name    	string			`json:"name"`
-	Period  	int 			`json:"period"`
-	Type    	string			`json:"type"`
-	Address		string			`json:"address"`
+	Name    string `json:"name"`
+	Period  int    `json:"period"`
+	Type    string `json:"type"`
+	Address string `json:"address"`
 }
 
 type NotificationQuery struct {
-	Offset    	*string			`queryParameter:"offset"`
-	Limit     	*int 			`queryParameter:"limit"`
-	SortBy    	*string			`queryParameter:"sort_by"`
+	Offset *string `queryParameter:"offset"`
+	Limit  *int    `queryParameter:"limit"`
+	SortBy *string `queryParameter:"sort_by"`
 }
 
 type NotificationRequestBody struct {
-	Name    	*string			`json:"name,omitempty"`
-	Period  	*int 			`json:"period,omitempty"`
-	Type    	*string			`json:"type,omitempty"`
-	Address		*string			`json:"address,omitempty"`
+	Name    *string `json:"name,omitempty"`
+	Period  *int    `json:"period,omitempty"`
+	Type    *string `json:"type,omitempty"`
+	Address *string `json:"address,omitempty"`
 }

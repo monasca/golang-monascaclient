@@ -16,8 +16,8 @@ package monascaclient
 
 import (
 	"fmt"
-	"testing"
 	"net/url"
+	"testing"
 )
 
 func TestUrlCreation(t *testing.T) {

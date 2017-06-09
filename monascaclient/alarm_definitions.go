@@ -15,8 +15,8 @@
 package monascaclient
 
 import (
-	"github.com/monasca/golang-monascaclient/monascaclient/models"
 	"encoding/json"
+	"github.com/monasca/golang-monascaclient/monascaclient/models"
 )
 
 func GetAlarmDefinitions(alarmDefinitionQuery *models.AlarmDefinitionQuery) (*models.AlarmDefinitionsResponse, error) {
@@ -28,19 +28,19 @@ func GetAlarmDefinition(alarmDefinitionID string) (*models.AlarmDefinitionElemen
 	return monClient.GetAlarmDefinition(alarmDefinitionID)
 }
 
-func CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+func CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody) (*models.AlarmDefinitionElement, error) {
 	return monClient.CreateAlarmDefinition(alarmDefinitionRequestBody)
 }
 
-func UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+func UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody) (*models.AlarmDefinitionElement, error) {
 	return monClient.UpdateAlarmDefinition(alarmDefinitionID, alarmDefinitionRequestBody)
 }
 
-func PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+func PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody) (*models.AlarmDefinitionElement, error) {
 	return monClient.PatchAlarmDefinition(alarmDefinitionID, alarmDefinitionRequestBody)
 }
 
-func DeleteAlarmDefinition(alarmDefinitionID string) (error) {
+func DeleteAlarmDefinition(alarmDefinitionID string) error {
 	return monClient.DeleteAlarmDefinition(alarmDefinitionID)
 }
 
@@ -74,7 +74,7 @@ func (c *Client) GetAlarmDefinition(alarmDefinitionID string) (*models.AlarmDefi
 		return nil, URLerr
 	}
 
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"GET", nil)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -88,7 +88,7 @@ func (c *Client) GetAlarmDefinition(alarmDefinitionID string) (*models.AlarmDefi
 	return &alarmDefinitionElement, nil
 }
 
-func (c *Client) CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+func (c *Client) CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody) (*models.AlarmDefinitionElement, error) {
 	path := "v2.0/alarm-definitions"
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -96,11 +96,11 @@ func (c *Client) CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmD
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*alarmDefinitionRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*alarmDefinitionRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"POST", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "POST", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -114,7 +114,7 @@ func (c *Client) CreateAlarmDefinition(alarmDefinitionRequestBody *models.AlarmD
 	return &alarmDefinitionsElement, nil
 }
 
-func (c *Client) UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+func (c *Client) UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody) (*models.AlarmDefinitionElement, error) {
 	path := "v2.0/alarm-definitions/" + alarmDefinitionID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -122,11 +122,11 @@ func (c *Client) UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinition
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*alarmDefinitionRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*alarmDefinitionRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"PUT", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PUT", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -140,7 +140,7 @@ func (c *Client) UpdateAlarmDefinition(alarmDefinitionID string, alarmDefinition
 	return &alarmDefinitionsElement, nil
 }
 
-func (c *Client) PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody)(*models.AlarmDefinitionElement, error) {
+func (c *Client) PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionRequestBody *models.AlarmDefinitionRequestBody) (*models.AlarmDefinitionElement, error) {
 	path := "v2.0/alarm-definitions/" + alarmDefinitionID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -148,11 +148,11 @@ func (c *Client) PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionR
 		return nil, URLerr
 	}
 
-	byteInput, marshalErr  := json.Marshal(*alarmDefinitionRequestBody)
-	if marshalErr != nil{
+	byteInput, marshalErr := json.Marshal(*alarmDefinitionRequestBody)
+	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL,"PATCH", &byteInput)
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PATCH", &byteInput)
 	if monascaErr != nil {
 		return nil, monascaErr
 	}
@@ -166,7 +166,7 @@ func (c *Client) PatchAlarmDefinition(alarmDefinitionID string, alarmDefinitionR
 	return &alarmDefinitionsElement, nil
 }
 
-func (c *Client) DeleteAlarmDefinition(alarmDefinitionID string) (error) {
+func (c *Client) DeleteAlarmDefinition(alarmDefinitionID string) error {
 	path := "v2.0/alarm-definitions/" + alarmDefinitionID
 
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
@@ -174,5 +174,5 @@ func (c *Client) DeleteAlarmDefinition(alarmDefinitionID string) (error) {
 		return URLerr
 	}
 
-	return c.callMonascaNoContent(monascaURL,"DELETE", nil)
+	return c.callMonascaNoContent(monascaURL, "DELETE", nil)
 }
