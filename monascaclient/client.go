@@ -187,7 +187,6 @@ func (c *Client) callMonascaWithBody(basePath string, id string, method string, 
 		path = path + "/" + id
 	}
 	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-	fmt.Printf("MonascaURL = %s", monascaURL)
 	if URLerr != nil {
 		return URLerr
 	}
