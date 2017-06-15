@@ -44,7 +44,7 @@ func DeleteAlarm(alarmID string) error {
 
 func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsResponse, error) {
 	alarmsResponse := new(models.AlarmsResponse)
-	err := c.callMonascaGet(alarmsBasePath, alarmQuery, alarmsResponse)
+	err := c.callMonascaGet(alarmsBasePath, "", alarmQuery, alarmsResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -53,9 +53,8 @@ func (c *Client) GetAlarms(alarmQuery *models.AlarmQuery) (*models.AlarmsRespons
 }
 
 func (c *Client) GetAlarm(alarmID string) (*models.Alarm, error) {
-	path := alarmsBasePath + "/" + alarmID
 	alarm := new(models.Alarm)
-	err := c.callMonascaGet(path, nil, alarm)
+	err := c.callMonascaGet(alarmsBasePath, alarmID, nil, alarm)
 	if err != nil {
 		return nil, err
 	}

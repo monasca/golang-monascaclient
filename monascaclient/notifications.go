@@ -48,7 +48,7 @@ func DeleteNotificationMethod(notificationID string) error {
 
 func (c *Client) GetNotificationMethods(notificationQuery *models.NotificationQuery) (*models.NotificationResponse, error) {
 	notificationsResponse := new(models.NotificationResponse)
-	err := c.callMonascaGet(notificationsBasePath, notificationQuery, notificationsResponse)
+	err := c.callMonascaGet(notificationsBasePath, "", notificationQuery, notificationsResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +57,8 @@ func (c *Client) GetNotificationMethods(notificationQuery *models.NotificationQu
 }
 
 func (c *Client) GetNotificationMethod(notificationMethodID string, notificationQuery *models.NotificationQuery) (*models.NotificationElement, error) {
-	path := notificationsBasePath + "/" + notificationMethodID
 	notificationElement := new(models.NotificationElement)
-	err := c.callMonascaGet(path, nil, notificationElement)
+	err := c.callMonascaGet(notificationsBasePath, notificationMethodID, nil, notificationElement)
 	if err != nil {
 		return nil, err
 	}

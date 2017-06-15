@@ -48,7 +48,7 @@ func DeleteAlarmDefinition(alarmDefinitionID string) error {
 
 func (c *Client) GetAlarmDefinitions(alarmDefinitionQuery *models.AlarmDefinitionQuery) (*models.AlarmDefinitionsResponse, error) {
 	alarmDefinitionsResponse := new(models.AlarmDefinitionsResponse)
-	err := c.callMonascaGet(alarmDefinitionsBasePath, alarmDefinitionQuery, alarmDefinitionsResponse)
+	err := c.callMonascaGet(alarmDefinitionsBasePath, "", alarmDefinitionQuery, alarmDefinitionsResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +57,8 @@ func (c *Client) GetAlarmDefinitions(alarmDefinitionQuery *models.AlarmDefinitio
 }
 
 func (c *Client) GetAlarmDefinition(alarmDefinitionID string) (*models.AlarmDefinitionElement, error) {
-	path := alarmDefinitionsBasePath + "/" + alarmDefinitionID
 	alarmDefinitionElement := new(models.AlarmDefinitionElement)
-	err := c.callMonascaGet(path, nil, alarmDefinitionElement)
+	err := c.callMonascaGet(alarmDefinitionsBasePath, alarmDefinitionID, nil, alarmDefinitionElement)
 	if err != nil {
 		return nil, err
 	}

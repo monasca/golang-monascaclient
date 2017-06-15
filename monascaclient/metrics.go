@@ -67,7 +67,7 @@ func (c *Client) CreateMetric(tenantID *string, metricRequestBody *models.Metric
 
 func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
 	metricsResponse := new(models.MetricsResponse)
-	err := c.callMonascaGet(metricsBasePath, metricQuery, metricsResponse)
+	err := c.callMonascaGet(metricsBasePath, "", metricQuery, metricsResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (c *Client) GetDimensionNames(dimensionQuery *models.DimensionNameQuery) ([
 
 func (c *Client) getDimensionQuery(path string, dimensionQuery interface{}) ([]string, error) {
 	response := new(models.DimensionValueResponse)
-	err := c.callMonascaGet(metricsBasePath+path, dimensionQuery, response)
+	err := c.callMonascaGet(metricsBasePath+path, "", dimensionQuery, response)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *Client) getDimensionQuery(path string, dimensionQuery interface{}) ([]s
 
 func (c *Client) GetStatistics(statisticsQuery *models.StatisticQuery) (*models.StatisticsResponse, error) {
 	statisticsResponse := new(models.StatisticsResponse)
-	err := c.callMonascaGet(metricsBasePath+"/statistics", statisticsQuery, statisticsResponse)
+	err := c.callMonascaGet(metricsBasePath+"/statistics", "", statisticsQuery, statisticsResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (c *Client) GetStatistics(statisticsQuery *models.StatisticQuery) (*models.
 
 func (c *Client) GetMeasurements(measurementsQuery *models.MeasurementQuery) (*models.MeasurementsResponse, error) {
 	measurementsResponse := new(models.MeasurementsResponse)
-	err := c.callMonascaGet(metricsBasePath+"/measurements", measurementsQuery, measurementsResponse)
+	err := c.callMonascaGet(metricsBasePath+"/measurements", "", measurementsQuery, measurementsResponse)
 	if err != nil {
 		return nil, err
 	}

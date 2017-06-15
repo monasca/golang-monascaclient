@@ -161,10 +161,19 @@ func (c *Client) callMonascaNoContent(monascaURL string, method string, requestB
 	return nil
 }
 
-func (c *Client) callMonascaGet(path string, queryStruct interface{}, returned interface{}) error {
+func makePath(basePath string, id string) string {
+	path := basePath
+	if id == "" {
+		return path
+	}
+	return path + "/" + id
+}
+
+func (c *Client) callMonascaGet(basePath string, id string, queryStruct interface{}, returned interface{}) error {
+
 	urlValues := convertStructToQueryParameters(queryStruct)
 
-	monascaURL, URLerr := c.createMonascaAPIURL(path, urlValues)
+	monascaURL, URLerr := c.createMonascaAPIURL(makePath(basePath, id), urlValues)
 	if URLerr != nil {
 		return URLerr
 	}
@@ -182,11 +191,7 @@ func (c *Client) callMonascaGet(path string, queryStruct interface{}, returned i
 }
 
 func (c *Client) callMonascaWithBody(basePath string, id string, method string, toSend interface{}, returned interface{}) error {
-	path := basePath
-	if id != "" {
-		path = path + "/" + id
-	}
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
+	monascaURL, URLerr := c.createMonascaAPIURL(makePath(basePath, id), nil)
 	if URLerr != nil {
 		return URLerr
 	}
