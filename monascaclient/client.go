@@ -68,11 +68,16 @@ func SetHeaders(headers http.Header) {
 	monClient.SetHeaders(headers)
 }
 
+func SetKeystoneConfig(config KeystoneConfig) {
+	monClient.SetKeystoneConfig(config)
+}
+
 type Client struct {
 	baseURL        string
 	requestTimeout int
 	allowInsecure  bool
 	headers        http.Header
+	keystoneConfig KeystoneConfig
 }
 
 func New() *Client {
@@ -99,32 +104,27 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
+func (c *Client) SetKeystoneConfig(config KeystoneConfig) {
+	c.keystoneConfig = config
+}
+
 func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) (*http.Response, error) {
 	var req *http.Request
-	var err error
+	var reqErr error
 
 	if requestBody == nil {
-		req, err = http.NewRequest(method, monascaURL, nil)
+		req, reqErr = http.NewRequest(method, monascaURL, nil)
 	} else {
-		req, err = http.NewRequest(method, monascaURL, bytes.NewBuffer(*requestBody))
+		req, reqErr = http.NewRequest(method, monascaURL, bytes.NewBuffer(*requestBody))
 	}
 
-	if err != nil {
-		return nil, err
+	if reqErr != nil {
+		return nil, reqErr
 	}
 
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-
-	for header, values := range c.headers {
-		for index := range values {
-			value := values[index]
-			if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
-				value = value[1 : len(value)-1]
-			}
-			req.Header.Add(header, value)
-		}
-	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	c.applyHeaders(req)
 
 	timeout := time.Duration(c.requestTimeout) * time.Second
 	var client *http.Client
@@ -137,12 +137,28 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 
 		client = &http.Client{Timeout: timeout, Transport: transCfg}
 	}
-	resp, err := client.Do(req)
-	if err != nil || resp == nil {
-		return nil, err
+	resp, respErr := client.Do(req)
+
+	// If response is 401, check for expired token and retry
+	if respErr == nil && resp != nil && resp.StatusCode == 401 && c.keystoneConfig != nil {
+		c.setKeystoneToken()
+		c.applyHeaders(req)
+		resp, respErr = client.Do(req)
 	}
 
-	return resp, err
+	return resp, respErr
+}
+
+func (c *Client) applyHeaders(req http.Request) {
+	for header, values := range c.headers {
+		for index := range values {
+			value := values[index]
+			if strings.HasPrefix(value, "[") && strings.HasSuffix(value, "]") {
+				value = value[1 : len(value)-1]
+			}
+			req.Header.Set(header, value)
+		}
+	}
 }
 
 func (c *Client) callMonascaNoContent(monascaURL string, method string, requestBody *[]byte) error {
