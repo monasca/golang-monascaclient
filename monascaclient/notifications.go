@@ -15,8 +15,11 @@
 package monascaclient
 
 import (
-	"encoding/json"
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
+)
+
+const (
+	notificationsBasePath = "v2.0/notification-methods"
 )
 
 func GetNotificationMethods(notificationQuery *models.NotificationQuery) (*models.NotificationResponse, error) {
@@ -44,136 +47,47 @@ func DeleteNotificationMethod(notificationID string) error {
 }
 
 func (c *Client) GetNotificationMethods(notificationQuery *models.NotificationQuery) (*models.NotificationResponse, error) {
-	urlValues := convertStructToQueryParameters(notificationQuery)
-
-	monascaURL, URLerr := c.createMonascaAPIURL("v2.0/notification-methods", urlValues)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	notificationMethodsResponse := models.NotificationResponse{}
-	err := json.Unmarshal(body, &notificationMethodsResponse)
+	notificationsResponse := new(models.NotificationResponse)
+	err := c.callMonascaGet(notificationsBasePath, "", notificationQuery, notificationsResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	return &notificationMethodsResponse, nil
+	return notificationsResponse, nil
 }
 
 func (c *Client) GetNotificationMethod(notificationMethodID string, notificationQuery *models.NotificationQuery) (*models.NotificationElement, error) {
-	urlValues := convertStructToQueryParameters(notificationQuery)
-
-	path := "v2.0/notification-methods/" + notificationMethodID
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, urlValues)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	notificationMethodElement := models.NotificationElement{}
-	err := json.Unmarshal(body, &notificationMethodElement)
+	notificationElement := new(models.NotificationElement)
+	err := c.callMonascaGet(notificationsBasePath, notificationMethodID, nil, notificationElement)
 	if err != nil {
 		return nil, err
 	}
 
-	return &notificationMethodElement, nil
+	return notificationElement, nil
 }
 
 func (c *Client) CreateNotificationMethod(notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
-	path := "v2.0/notification-methods"
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	byteInput, marshalErr := json.Marshal(*notificationRequestBody)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "POST", &byteInput)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	notificationMethodElement := models.NotificationElement{}
-	err := json.Unmarshal(body, &notificationMethodElement)
-	if err != nil {
-		return nil, err
-	}
-
-	return &notificationMethodElement, nil
+	return c.sendNotification("", "POST", notificationRequestBody)
 }
 
 func (c *Client) UpdateNotificationMethod(notificationID string, notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
-	path := "v2.0/notification-methods/" + notificationID
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	byteInput, marshalErr := json.Marshal(*notificationRequestBody)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PUT", &byteInput)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	notificationMethodElement := models.NotificationElement{}
-	err := json.Unmarshal(body, &notificationMethodElement)
-	if err != nil {
-		return nil, err
-	}
-
-	return &notificationMethodElement, nil
+	return c.sendNotification(notificationID, "PUT", notificationRequestBody)
 }
 
 func (c *Client) PatchNotificationMethod(notificationID string, notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
-	path := "v2.0/notification-methods/" + notificationID
+	return c.sendNotification(notificationID, "PATCH", notificationRequestBody)
+}
 
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-	if URLerr != nil {
-		return nil, URLerr
-	}
-
-	byteInput, marshalErr := json.Marshal(*notificationRequestBody)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-	body, monascaErr := c.callMonascaReturnBody(monascaURL, "PATCH", &byteInput)
-	if monascaErr != nil {
-		return nil, monascaErr
-	}
-
-	notificationMethodElement := models.NotificationElement{}
-	err := json.Unmarshal(body, &notificationMethodElement)
+func (c *Client) sendNotification(notificationID string, method string, notificationRequestBody *models.NotificationRequestBody) (*models.NotificationElement, error) {
+	notificationsElement := new(models.NotificationElement)
+	err := c.callMonascaWithBody(notificationsBasePath, notificationID, method, notificationRequestBody, notificationsElement)
 	if err != nil {
 		return nil, err
 	}
 
-	return &notificationMethodElement, nil
+	return notificationsElement, nil
 }
 
 func (c *Client) DeleteNotificationMethod(notificationID string) error {
-	path := "v2.0/notification-methods/" + notificationID
-
-	monascaURL, URLerr := c.createMonascaAPIURL(path, nil)
-	if URLerr != nil {
-		return URLerr
-	}
-
-	return c.callMonascaNoContent(monascaURL, "DELETE", nil)
+	return c.callMonascaDelete(notificationsBasePath, notificationID)
 }

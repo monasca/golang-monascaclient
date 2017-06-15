@@ -17,6 +17,7 @@ package monascaclient
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -158,6 +159,67 @@ func (c *Client) callMonascaNoContent(monascaURL string, method string, requestB
 		return fmt.Errorf("Error: %d %s", resp.StatusCode, body)
 	}
 	return nil
+}
+
+func makePath(basePath string, id string) string {
+	path := basePath
+	if id == "" {
+		return path
+	}
+	return path + "/" + id
+}
+
+func (c *Client) callMonascaGet(basePath string, id string, queryStruct interface{}, returned interface{}) error {
+
+	urlValues := convertStructToQueryParameters(queryStruct)
+
+	monascaURL, URLerr := c.createMonascaAPIURL(makePath(basePath, id), urlValues)
+	if URLerr != nil {
+		return URLerr
+	}
+
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, "GET", nil)
+	if monascaErr != nil {
+		return monascaErr
+	}
+
+	err := json.Unmarshal(body, returned)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) callMonascaWithBody(basePath string, id string, method string, toSend interface{}, returned interface{}) error {
+	monascaURL, URLerr := c.createMonascaAPIURL(makePath(basePath, id), nil)
+	if URLerr != nil {
+		return URLerr
+	}
+
+	byteInput, marshalErr := json.Marshal(toSend)
+	if marshalErr != nil {
+		return marshalErr
+	}
+	body, monascaErr := c.callMonascaReturnBody(monascaURL, method, &byteInput)
+	if monascaErr != nil {
+		return monascaErr
+	}
+
+	err := json.Unmarshal(body, returned)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) callMonascaDelete(path string, id string) error {
+	monascaURL, URLerr := c.createMonascaAPIURL(path+"/"+id, nil)
+	if URLerr != nil {
+		return URLerr
+	}
+
+	return c.callMonascaNoContent(monascaURL, "DELETE", nil)
 }
 
 func (c *Client) callMonascaReturnBody(monascaURL string, method string, requestBody *[]byte) ([]byte, error) {
