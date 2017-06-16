@@ -22,8 +22,8 @@ import (
 
 type KeystoneConfig gophercloud.AuthOptions
 
-func SetKeystoneToken() {
-	monClient.setKeystoneToken()
+func SetKeystoneToken() error {
+	return monClient.setKeystoneToken()
 }
 
 func (c *Client) setKeystoneToken() error {
