@@ -133,7 +133,7 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	c.applyHeaders(req)
+	c.applyHeaders(&req)
 
 	timeout := time.Duration(c.requestTimeout) * time.Second
 	var client *http.Client
@@ -151,14 +151,14 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 	// If response is 401, check for expired token and retry
 	if respErr == nil && resp != nil && resp.StatusCode == 401 && c.keystoneConfig != nil {
 		c.setKeystoneToken()
-		c.applyHeaders(req)
+		c.applyHeaders(&req)
 		resp, respErr = client.Do(req)
 	}
 
 	return resp, respErr
 }
 
-func (c *Client) applyHeaders(req http.Request) {
+func (c *Client) applyHeaders(req *http.Request) {
 	for header, values := range c.headers {
 		for index := range values {
 			value := values[index]
