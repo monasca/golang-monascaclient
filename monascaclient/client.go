@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/gophercloud/gophercloud/openstack"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -68,7 +69,7 @@ func SetHeaders(headers http.Header) {
 	monClient.SetHeaders(headers)
 }
 
-func SetKeystoneConfig(config KeystoneConfig) {
+func SetKeystoneConfig(config *KeystoneConfig) {
 	monClient.SetKeystoneConfig(config)
 }
 
@@ -77,7 +78,7 @@ type Client struct {
 	requestTimeout int
 	allowInsecure  bool
 	headers        http.Header
-	keystoneConfig KeystoneConfig
+	keystoneConfig *KeystoneConfig
 }
 
 func New() *Client {
@@ -104,8 +105,16 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-func (c *Client) SetKeystoneConfig(config KeystoneConfig) {
+func (c *Client) SetKeystoneConfig(config *KeystoneConfig) error {
+	if config == nil {
+		var err error
+		config, err = openstack.AuthOptionsFromEnv()
+		if err != nil {
+			return fmt.Errorf("Failed to get keystone config from env: %v", err)
+		}
+	}
 	c.keystoneConfig = config
+	return nil
 }
 
 func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]byte) (*http.Response, error) {
