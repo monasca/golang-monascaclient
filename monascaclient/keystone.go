@@ -17,7 +17,6 @@ package monascaclient
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
-	"net/http"
 )
 
 type KeystoneConfig gophercloud.AuthOptions
@@ -26,15 +25,16 @@ func SetKeystoneToken() error {
 	return monClient.setKeystoneToken()
 }
 
+func (c *Client) SetKeystoneToken() error {
+	return c.setKeystoneToken()
+}
+
 func (c *Client) setKeystoneToken() error {
 	openstackProvider, err := openstack.AuthenticatedClient(c.keystoneConfig)
 	if err != nil {
 		return err
 	}
-	//fmt.Println(openstackProvider.TokenID)
 	token := openstackProvider.TokenID
-	headers := http.Header{}
-	headers.Add("X-Auth-Token", token)
-	c.SetHeaders(headers)
+	c.headers.Set("X-Auth-Token", token)
 	return nil
 }
