@@ -17,7 +17,7 @@ package models
 import "time"
 
 type MetricsResponse struct {
-	Links    Link     `json:"links"`
+	Links    []Link   `json:"links"`
 	Elements []Metric `json:"elements"`
 }
 
