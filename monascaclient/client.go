@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"io/ioutil"
 	"net/http"
@@ -69,7 +70,7 @@ func SetHeaders(headers http.Header) {
 	monClient.SetHeaders(headers)
 }
 
-func SetKeystoneConfig(config *KeystoneConfig) {
+func SetKeystoneConfig(config *gophercloud.AuthOptions) {
 	monClient.SetKeystoneConfig(config)
 }
 
@@ -78,7 +79,7 @@ type Client struct {
 	requestTimeout int
 	allowInsecure  bool
 	headers        http.Header
-	keystoneConfig *KeystoneConfig
+	keystoneConfig *gophercloud.AuthOptions
 }
 
 func New() *Client {
@@ -105,13 +106,13 @@ func (c *Client) SetHeaders(headers http.Header) {
 	c.headers = headers
 }
 
-func (c *Client) SetKeystoneConfig(config *KeystoneConfig) error {
+func (c *Client) SetKeystoneConfig(config *gophercloud.AuthOptions) error {
 	if config == nil {
-		var err error
-		config, err = openstack.AuthOptionsFromEnv()
+		tmpConfig, err := openstack.AuthOptionsFromEnv()
 		if err != nil {
 			return fmt.Errorf("Failed to get keystone config from env: %v", err)
 		}
+		config = &tmpConfig
 	}
 	c.keystoneConfig = config
 	return nil
@@ -133,7 +134,7 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	c.applyHeaders(&req)
+	c.applyHeaders(req)
 
 	timeout := time.Duration(c.requestTimeout) * time.Second
 	var client *http.Client
@@ -151,7 +152,7 @@ func (c *Client) callMonasca(monascaURL string, method string, requestBody *[]by
 	// If response is 401, check for expired token and retry
 	if respErr == nil && resp != nil && resp.StatusCode == 401 && c.keystoneConfig != nil {
 		c.setKeystoneToken()
-		c.applyHeaders(&req)
+		c.applyHeaders(req)
 		resp, respErr = client.Do(req)
 	}
 
