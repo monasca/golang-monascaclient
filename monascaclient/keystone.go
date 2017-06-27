@@ -15,11 +15,8 @@
 package monascaclient
 
 import (
-	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 )
-
-type KeystoneConfig gophercloud.AuthOptions
 
 func SetKeystoneToken() error {
 	return monClient.setKeystoneToken()
@@ -30,7 +27,7 @@ func (c *Client) SetKeystoneToken() error {
 }
 
 func (c *Client) setKeystoneToken() error {
-	openstackProvider, err := openstack.AuthenticatedClient(c.keystoneConfig)
+	openstackProvider, err := openstack.AuthenticatedClient(*c.keystoneConfig)
 	if err != nil {
 		return err
 	}
