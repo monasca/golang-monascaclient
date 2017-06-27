@@ -23,12 +23,12 @@ type DimensionValue struct {
 	Value string `json:"dimension_value"`
 }
 
-type DimensionNameQuery struct {
+type DimensionValueQuery struct {
 	DimensionName *string `queryParameter:"dimension_name"`
-	DimensionValueQuery
+	DimensionNameQuery
 }
 
-type DimensionValueQuery struct {
+type DimensionNameQuery struct {
 	TenantID *string `queryParameter:"tenant_id"`
 	Name     *string `queryParameter:"metric_name"`
 	Offset   *int    `queryParameter:"offset"`
