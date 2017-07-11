@@ -17,6 +17,7 @@ package monascaclient
 import (
 	"encoding/json"
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
+	"github.hpe.com/UNCLE/metrics-api/metrics"
 	"net/url"
 )
 
@@ -27,6 +28,10 @@ const (
 
 func GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, error) {
 	return monClient.GetMetrics(metricQuery)
+}
+
+func GetMetricNames(metricQuery *models.MetricNameQuery) ([]string, error) {
+	return monClient.GetMetricNames(metricQuery)
 }
 
 func GetDimensionValues(dimensionQuery *models.DimensionValueQuery) ([]string, error) {
@@ -69,7 +74,7 @@ func (c *Client) GetMetrics(metricQuery *models.MetricQuery) ([]models.Metric, e
 	metricsResponse := new(models.MetricsResponse)
 	err := c.callMonascaGet(metricsBasePath, "", metricQuery, metricsResponse)
 	if err != nil {
-		return nil, err
+		return []models.Metric{}, err
 	}
 
 	return metricsResponse.Elements, nil
@@ -87,7 +92,7 @@ func (c *Client) getDimensionQuery(path string, dimensionQuery interface{}) ([]s
 	response := new(models.DimensionValueResponse)
 	err := c.callMonascaGet(metricsBasePath+path, "", dimensionQuery, response)
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
 
 	results := []string{}
@@ -95,6 +100,20 @@ func (c *Client) getDimensionQuery(path string, dimensionQuery interface{}) ([]s
 		results = append(results, value.Value)
 	}
 
+	return results, nil
+}
+
+func (c *Client) GetMetricNames(metricQuery *models.MetricNameQuery) ([]string, error) {
+	response := new(models.MetricNameResponse)
+	err := c.callMonascaGet(metricsBasePath+"/names", "", metricQuery, response)
+	if err != nil {
+		return []string{}, err
+	}
+
+	results := []string{}
+	for _, value := range response.Elements {
+		results = append(results, value["name"])
+	}
 	return results, nil
 }
 
