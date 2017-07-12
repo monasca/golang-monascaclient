@@ -17,7 +17,6 @@ package monascaclient
 import (
 	"encoding/json"
 	"github.com/monasca/golang-monascaclient/monascaclient/models"
-	"github.hpe.com/UNCLE/metrics-api/metrics"
 	"net/url"
 )
 
