@@ -15,7 +15,7 @@
 package models
 
 type MetricNameResponse struct {
-	Links    Link                `json:"links"`
+	Links    []Link              `json:"links"`
 	Elements []map[string]string `json:"elements"`
 }
 
