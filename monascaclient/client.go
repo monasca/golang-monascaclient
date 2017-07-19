@@ -39,6 +39,7 @@ var (
 		baseURL:        defaultURL,
 		requestTimeout: defaultTimeout,
 		allowInsecure:  defaultInsecure,
+		headers:        http.Header{},
 	}
 )
 
@@ -87,6 +88,7 @@ func New() *Client {
 		baseURL:        defaultURL,
 		requestTimeout: defaultTimeout,
 		allowInsecure:  defaultInsecure,
+		headers:        http.Header{},
 	}
 }
 
